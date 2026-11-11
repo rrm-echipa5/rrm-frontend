@@ -9,6 +9,8 @@ on:
     types: [opened, edited, synchronize, reopened]
   push:
     branches: [main]
+  # Permite pornirea manuală a verificărilor din tab-ul Actions.
+  workflow_dispatch:
 
 permissions:
   contents: read
