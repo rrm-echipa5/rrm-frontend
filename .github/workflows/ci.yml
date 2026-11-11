@@ -1,0 +1,64 @@
+# Verificările obligatorii pentru fiecare pull request spre main.
+# Regulile de protecție ale branch-ului main cer ca job-urile de mai jos să treacă
+# înainte de merge, deci coding style-ul nu poate fi ocolit.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, edited, synchronize, reopened]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  conventions:
+    name: Convenții (branch și titlu PR)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+      - name: 'Branch KAN-<număr>-<titlu> și titlu PR KAN-<număr>: ...'
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.head_ref }}
+        run: node scripts/check-git-conventions.mjs pr-title "$PR_TITLE" "$BRANCH"
+
+  lint:
+    name: Coding style (ESLint, Prettier, TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Reguli (ESLint)
+        run: npm run lint
+      - name: Formatare (Prettier)
+        run: npm run format:check
+      - name: Tipuri (tsc strict)
+        run: npm run typecheck
+
+  test:
+    name: Teste și build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

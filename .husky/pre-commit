@@ -1,0 +1,3 @@
+# Coding style: ESLint și Prettier pe fișierele modificate, apoi verificarea tipurilor.
+npx lint-staged
+npm run typecheck
