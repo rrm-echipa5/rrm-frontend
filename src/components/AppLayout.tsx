@@ -1,7 +1,10 @@
 import { AppShell, Container, Group, Text, Title } from '@mantine/core';
 import { NavLink, Outlet } from 'react-router';
 
-const NAV_LINKS = [{ to: '/', label: 'Acasă' }];
+const NAV_LINKS = [
+  { to: '/', label: 'Acasă' },
+  { to: '/resources', label: 'Resurse' },
+];
 
 /** Cadrul comun al paginilor: antetul cu numele aplicației și meniul. */
 export function AppLayout(): React.JSX.Element {
