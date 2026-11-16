@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 
 import type { Problem, ResourceDetail, ResourceWriteRequest } from '../api/types';
+import { resourceCalendar } from './calendarMocks';
 import { catalogMoment } from './mockClock';
 import { catalogPage, type CatalogQuery, myCertifications, resourceDetail } from './resourceMocks';
 import {
@@ -137,6 +138,20 @@ export const handlers = [
   http.delete('/api/resources/:resourceId', ({ params }) => {
     const result = deleteResource(Number(params['resourceId']), catalogMoment());
     return result.ok ? new HttpResponse(null, { status: 204 }) : problemResponse(result.problem);
+  }),
+
+  http.get('/api/resources/:resourceId/calendar', ({ request, params }) => {
+    const url = new URL(request.url);
+    const result = resourceCalendar(
+      Number(params['resourceId']),
+      url.searchParams.get('start'),
+      url.searchParams.get('end'),
+    );
+    if (!result.ok) {
+      const code = result.status === 404 ? 'NOT_FOUND' : 'VALIDATION_FAILED';
+      return problem(result.status, code, result.detail);
+    }
+    return HttpResponse.json(result.calendar);
   }),
 
   http.get('/api/resources/:resourceId/files/:fileId', ({ params }) =>

@@ -74,13 +74,17 @@ export interface ResourceSummary {
   userCertified?: boolean;
 }
 
-/** Regulile de utilizare ale resursei (`UsageRule`, cu `UsageRuleSummary`). */
-export interface UsageRule {
+/** Regulile de utilizare de care ține cont calendarul (`UsageRuleSummary`). */
+export interface UsageRuleSummary {
   minDurationMinutes: number;
   maxDurationMinutes: number;
   breakBetweenMinutes: number;
   checkInDeadlineMinutes: number;
   requiredCertificationLevel?: number | null;
+}
+
+/** Regulile de utilizare ale resursei, cu fluxul de aprobare (`UsageRule`). */
+export interface UsageRule extends UsageRuleSummary {
   approvalFlow: ApprovalFlow;
   updatedAt?: string;
   updatedBy?: UserRef;
@@ -179,4 +183,28 @@ export interface ResourceWriteRequest {
   tags: string[];
   approvalFlow: ApprovalFlow;
   administratorId?: number;
+}
+
+/** Ce ocupă un interval din calendar; `PENDING` include și `PENDING_ADMIN`. */
+export type CalendarEntryType = 'CONFIRMED' | 'PENDING' | 'IN_PROGRESS' | 'MAINTENANCE';
+
+/** Un interval ocupat din calendarul resursei (`CalendarEntry`). */
+export interface CalendarEntry {
+  start: string;
+  end: string;
+  type: CalendarEntryType;
+  /** Dacă intervalul este al utilizatorului curent. */
+  own: boolean;
+  /** Doar pentru rezervările proprii; `null` pentru ale altora și pentru mentenanță. */
+  reservationId?: number | null;
+}
+
+/** Calendarul disponibilității unei resurse (`ResourceCalendar`). */
+export interface ResourceCalendar {
+  resource: ResourceRef;
+  start: string;
+  end: string;
+  rules: UsageRuleSummary;
+  /** Intervalele ocupate, ordonate după început; restul intervalului este liber. */
+  entries: CalendarEntry[];
 }
