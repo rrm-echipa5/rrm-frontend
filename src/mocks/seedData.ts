@@ -5,21 +5,26 @@
 
 import type { ApprovalFlow, ResourceCategory, UserRef } from '../api/types';
 
+/** Enumerarea `Rol` din `rrm-api.yaml`. */
+export type Role = 'STUDENT' | 'RESEARCHER' | 'RESOURCE_ADMIN' | 'SYSTEM_ADMIN';
+
+/** Un rând din tabelul `users`, fără parolă și secretul 2FA. */
+export interface SeedUser extends UserRef {
+  role: Role;
+}
+
 /** Momentul la care sunt create rândurile fără dată explicită în seed. */
 export const SEED_LOADED_AT = '2026-11-08T19:00:00+02:00';
 
-/** Utilizatorul autentificat în modul mock: Ana Popescu (student), ca în fluxul din prototip. */
-export const CURRENT_USER_ID = 3;
-
-/** Tabelul `users`, fără parole și secretele 2FA. */
-export const SEED_USERS: UserRef[] = [
-  { id: 1, name: 'Elena Marin', email: 'elena.marin@usv.ro' },
-  { id: 2, name: 'Andrei Rusu', email: 'andrei.rusu@usv.ro' },
-  { id: 3, name: 'Ana Popescu', email: 'ana.popescu@student.usv.ro' },
-  { id: 4, name: 'Mihai Ionescu', email: 'mihai.ionescu@usv.ro' },
-  { id: 5, name: 'Ioana Dumitru', email: 'ioana.dumitru@student.usv.ro' },
-  { id: 6, name: 'Radu Stan', email: 'radu.stan@usv.ro' },
-  { id: 7, name: 'Vlad Popa', email: 'vlad.popa@usv.ro' },
+/** Tabelul `users`. */
+export const SEED_USERS: SeedUser[] = [
+  { id: 1, name: 'Elena Marin', email: 'elena.marin@usv.ro', role: 'SYSTEM_ADMIN' },
+  { id: 2, name: 'Andrei Rusu', email: 'andrei.rusu@usv.ro', role: 'RESEARCHER' },
+  { id: 3, name: 'Ana Popescu', email: 'ana.popescu@student.usv.ro', role: 'STUDENT' },
+  { id: 4, name: 'Mihai Ionescu', email: 'mihai.ionescu@usv.ro', role: 'RESOURCE_ADMIN' },
+  { id: 5, name: 'Ioana Dumitru', email: 'ioana.dumitru@student.usv.ro', role: 'STUDENT' },
+  { id: 6, name: 'Radu Stan', email: 'radu.stan@usv.ro', role: 'RESEARCHER' },
+  { id: 7, name: 'Vlad Popa', email: 'vlad.popa@usv.ro', role: 'RESOURCE_ADMIN' },
 ];
 
 /** Tabelul `resource_categories`. */

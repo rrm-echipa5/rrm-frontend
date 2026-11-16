@@ -5,16 +5,9 @@ import type {
   ResourceStatus,
   ResourceSummary,
   ResourceSummaryPage,
-  UserRef,
 } from '../api/types';
-import {
-  CURRENT_USER_ID,
-  SEED_CATEGORIES,
-  SEED_LOADED_AT,
-  SEED_RESOURCES,
-  SEED_USERS,
-  type SeedResource,
-} from './seedData';
+import { allResources, currentUser, findResource, resourceTimestamps, userRef } from './mockDb';
+import { SEED_CATEGORIES, SEED_LOADED_AT, type SeedResource } from './seedData';
 import {
   certificationStatus,
   SEED_CERTIFICATIONS,
@@ -36,14 +29,6 @@ export interface CatalogQuery {
 
 const SORTABLE_FIELDS = ['id', 'name', 'location', 'status'] as const;
 type SortField = (typeof SORTABLE_FIELDS)[number];
-
-function userRef(userId: number): UserRef {
-  const user = SEED_USERS.find((candidate) => candidate.id === userId);
-  if (user === undefined) {
-    throw new Error(`Utilizatorul ${String(userId)} lipsește din datele de test.`);
-  }
-  return user;
-}
 
 function categoryRef(categoryId: number): { id: number; name: string } {
   const category = SEED_CATEGORIES.find((candidate) => candidate.id === categoryId);
@@ -94,7 +79,7 @@ function resourceStatus(resource: SeedResource, now: Date): ResourceStatus {
 function isCertified(resourceId: number, now: Date): boolean {
   return SEED_CERTIFICATIONS.some(
     (cert) =>
-      cert.userId === CURRENT_USER_ID &&
+      cert.userId === currentUser().id &&
       cert.resourceId === resourceId &&
       certificationStatus(cert, now) === 'ACTIVE',
   );
@@ -139,7 +124,8 @@ function compareBy(sort: string): (a: ResourceSummary, b: ResourceSummary) => nu
 
 /** `GET /resources`: catalogul filtrat, sortat și paginat. */
 export function catalogPage(query: CatalogQuery, now: Date): ResourceSummaryPage {
-  const items = SEED_RESOURCES.map((resource) => ({ resource, summary: toSummary(resource, now) }))
+  const items = allResources()
+    .map((resource) => ({ resource, summary: toSummary(resource, now) }))
     .filter(({ resource, summary }) => matches(summary, resource, query))
     .map(({ summary }) => summary)
     .sort(compareBy(query.sort));
@@ -157,10 +143,11 @@ export function catalogPage(query: CatalogQuery, now: Date): ResourceSummaryPage
 
 /** `GET /resources/{resourceId}`: fișa resursei, sau `null` dacă nu există. */
 export function resourceDetail(resourceId: number, now: Date): ResourceDetail | null {
-  const resource = SEED_RESOURCES.find((candidate) => candidate.id === resourceId);
+  const resource = findResource(resourceId);
   if (resource === undefined) {
     return null;
   }
+  const { createdAt, updatedAt } = resourceTimestamps(resource.id);
   return {
     ...toSummary(resource, now),
     description: resource.description,
@@ -183,17 +170,17 @@ export function resourceDetail(resourceId: number, now: Date): ResourceDetail | 
       uploadedAt: SEED_LOADED_AT,
     })),
     currentOrNextMaintenance: currentOrNextMaintenance(resource, now),
-    // Codul QR apare doar pentru administratorul resursei; utilizatorul mock este student.
-    checkInQrCode: resource.administratorId === CURRENT_USER_ID ? resource.checkInQrCode : null,
-    createdAt: SEED_LOADED_AT,
-    updatedAt: SEED_LOADED_AT,
+    // Codul QR de check-in este vizibil doar pentru administratorul resursei.
+    checkInQrCode: resource.administratorId === currentUser().id ? resource.checkInQrCode : null,
+    createdAt: createdAt ?? SEED_LOADED_AT,
+    updatedAt: updatedAt ?? SEED_LOADED_AT,
   };
 }
 
 /** `GET /users/me/certifications`: certificările utilizatorului curent. */
 export function myCertifications(now: Date): Certification[] {
-  return SEED_CERTIFICATIONS.filter((cert) => cert.userId === CURRENT_USER_ID).map((cert) => {
-    const resource = SEED_RESOURCES.find((candidate) => candidate.id === cert.resourceId);
+  return SEED_CERTIFICATIONS.filter((cert) => cert.userId === currentUser().id).map((cert) => {
+    const resource = findResource(cert.resourceId);
     return {
       id: cert.id,
       user: userRef(cert.userId),
