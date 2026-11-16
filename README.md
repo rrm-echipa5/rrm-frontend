@@ -22,7 +22,7 @@ Aplicația se deschide pe `http://localhost:5173`. Vite trimite cererile `/api` 
 npm run dev:mock
 ```
 
-Cererile `/api` pentru catalog și fișa resursei primesc răspunsuri din `src/mocks` (MSW), cu datele din `rrm-backend/db/seed.sql` și formatul din `rrm-api.yaml`. Utilizatorul curent este Ana Popescu (student). Cererile fără răspuns mock (de exemplu adăugarea unei resurse) ajung în continuare la backend. Ca Microscopul SEM să apară în mentenanță (calibrarea din 20-21 noiembrie 2026), se decomentează `VITE_MOCK_NOW` în `.env.mock`.
+Cererile `/api` pentru resurse (catalogul, fișa, adăugarea, modificarea și ștergerea) și pentru certificările utilizatorului primesc răspunsuri din `src/mocks` (MSW), cu datele din `rrm-backend/db/seed.sql`, formatul din `rrm-api.yaml` și drepturile din backend. Ca în backend (`RRM_DEMO_USER_ID`), cererile se fac în numele lui Mihai Ionescu (4, administrator de resurse); altul se alege cu `VITE_MOCK_USER_ID` în `.env.mock` (de exemplu 3, Ana Popescu, studentă, sau 1, administratoarea de sistem). Modificările se păstrează doar până la reîncărcarea paginii. Cererile fără răspuns mock ajung în continuare la backend. Ca Microscopul SEM să apară în mentenanță (calibrarea din 20-21 noiembrie 2026), se decomentează `VITE_MOCK_NOW`.
 
 ## Pagini
 

@@ -32,6 +32,7 @@ describe('CatalogPage', () => {
   });
 
   it('arată dacă utilizatorul curent are certificarea cerută', async () => {
+    vi.stubEnv('VITE_MOCK_USER_ID', '3'); // Ana Popescu, studentă certificată pentru SEM
     renderWithProviders(<CatalogPage />, { route: '/catalog' });
 
     const sem = await screen.findByRole('link', { name: /Microscop electronic SEM/ });

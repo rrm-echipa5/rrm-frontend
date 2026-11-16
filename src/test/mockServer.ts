@@ -1,6 +1,7 @@
 import { setupServer } from 'msw/node';
 
 import { handlers } from '../mocks/handlers';
+import { resetMockDb } from '../mocks/mockDb';
 
 /**
  * Serverul MSW pentru teste, cu aceleași handlere ca stratul mock din aplicație: testele verifică
@@ -15,6 +16,7 @@ export function startMockServer(): void {
   });
   afterEach(() => {
     mockServer.resetHandlers();
+    resetMockDb();
   });
   afterAll(() => {
     mockServer.close();

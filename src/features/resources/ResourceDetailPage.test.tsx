@@ -60,6 +60,7 @@ describe('ResourceDetailPage', () => {
   });
 
   it('afișează certificarea valabilă a utilizatorului curent', async () => {
+    vi.stubEnv('VITE_MOCK_USER_ID', '3'); // Ana Popescu, studentă certificată pentru SEM
     renderDetail(7);
 
     await screen.findByRole('heading', { name: 'Microscop electronic SEM' });
@@ -71,6 +72,7 @@ describe('ResourceDetailPage', () => {
   });
 
   it('spune când utilizatorul nu are certificarea cerută', async () => {
+    vi.stubEnv('VITE_MOCK_USER_ID', '3');
     renderDetail(9);
 
     await screen.findByRole('heading', { name: 'Microscop electronic TEM' });
