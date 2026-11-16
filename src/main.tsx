@@ -25,11 +25,13 @@ async function enableApiMocks(): Promise<void> {
   if (!import.meta.env.DEV || import.meta.env.VITE_API_MOCKS !== 'true') {
     return;
   }
-  const { network } = await import('virtual:msw');
-  const { handlers } = await import('./mocks/handlers');
-  // Cererile fără handler (de exemplu POST /resources) ajung în continuare la backend.
-  network.configure({ handlers, onUnhandledFrame: 'bypass' });
-  await network.enable();
+  try {
+    const { startMockApi } = await import('./mocks/browser');
+    startMockApi();
+  } catch (error) {
+    // Aplicația pornește oricum; fără mock, cererile ajung la backend-ul local.
+    console.error('Stratul mock nu a putut fi pornit.', error);
+  }
 }
 
 await enableApiMocks();

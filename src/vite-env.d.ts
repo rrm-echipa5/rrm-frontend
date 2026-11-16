@@ -1,4 +1,4 @@
-/// <reference types="msw/vite/client" />
+/// <reference types="vite/client" />
 
 interface ImportMetaEnv {
   /** `true` pornește stratul mock (MSW) în locul backend-ului local (`npm run dev:mock`). */
