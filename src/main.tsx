@@ -20,6 +20,20 @@ if (rootElement === null) {
   throw new Error('Elementul #root lipsește din index.html.');
 }
 
+/** Pornește stratul mock (MSW) doar în dezvoltare și doar dacă `VITE_API_MOCKS=true`. */
+async function enableApiMocks(): Promise<void> {
+  if (!import.meta.env.DEV || import.meta.env.VITE_API_MOCKS !== 'true') {
+    return;
+  }
+  const { network } = await import('virtual:msw');
+  const { handlers } = await import('./mocks/handlers');
+  // Cererile fără handler (de exemplu POST /resources) ajung în continuare la backend.
+  network.configure({ handlers, onUnhandledFrame: 'bypass' });
+  await network.enable();
+}
+
+await enableApiMocks();
+
 createRoot(rootElement).render(
   <StrictMode>
     <MantineProvider theme={theme}>
