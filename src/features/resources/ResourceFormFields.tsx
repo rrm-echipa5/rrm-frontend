@@ -2,7 +2,7 @@ import { Select, TagsInput, Textarea, TextInput } from '@mantine/core';
 import { Controller, type UseFormReturn } from 'react-hook-form';
 
 import type { ResourceCategory } from '../../api/types';
-import type { ResourceFormValues } from './resourceForm';
+import type { ResourceFormValues } from './resourceFormSchema';
 import { APPROVAL_FLOW_LABELS } from './resourceLabels';
 import { SpecificationsField } from './SpecificationsField';
 

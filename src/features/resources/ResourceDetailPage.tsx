@@ -19,7 +19,7 @@ import { Link, useLocation, useParams } from 'react-router';
 import type { ResourceDetail } from '../../api/types';
 import { MaintenanceAlert } from './MaintenanceAlert';
 import { MyCertificationCard } from './MyCertificationCard';
-import { errorMessage } from './resourceForm';
+import { errorMessage } from './resourceFormSchema';
 import { STATUS_BADGES } from './resourceLabels';
 import { ResourceOverview } from './ResourceOverview';
 import { UsageRulesCard } from './UsageRulesCard';
