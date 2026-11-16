@@ -3,6 +3,7 @@ import { NavLink, Outlet } from 'react-router';
 
 const NAV_LINKS = [
   { to: '/', label: 'Acasă' },
+  { to: '/catalog', label: 'Catalog resurse' },
   { to: '/resources', label: 'Resurse' },
 ];
 
