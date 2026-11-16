@@ -1,11 +1,14 @@
+import 'dayjs/locale/ro';
+
 import { MantineProvider } from '@mantine/core';
+import { DatesProvider } from '@mantine/dates';
 import { Notifications } from '@mantine/notifications';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, type RenderResult } from '@testing-library/react';
 import { type ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 
-import { theme } from '../theme';
+import { DATES_SETTINGS, theme } from '../theme';
 
 /** Opțiunile randării: adresa de pornire a routerului (implicit `/`). */
 export interface RenderOptions {
@@ -18,9 +21,11 @@ export function renderWithProviders(ui: ReactNode, options: RenderOptions = {}):
   return render(
     <MantineProvider theme={theme} env="test">
       <Notifications />
-      <QueryClientProvider client={queryClient}>
-        <MemoryRouter initialEntries={[options.route ?? '/']}>{ui}</MemoryRouter>
-      </QueryClientProvider>
+      <DatesProvider settings={DATES_SETTINGS}>
+        <QueryClientProvider client={queryClient}>
+          <MemoryRouter initialEntries={[options.route ?? '/']}>{ui}</MemoryRouter>
+        </QueryClientProvider>
+      </DatesProvider>
     </MantineProvider>,
   );
 }

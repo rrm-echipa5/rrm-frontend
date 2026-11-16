@@ -35,6 +35,31 @@ export function formatDateTime(value: string): string {
   return DATE_TIME_FORMAT.format(new Date(value));
 }
 
+const WEEKDAY_TIME_FORMAT = new Intl.DateTimeFormat('ro-RO', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat('ro-RO', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+/** Un moment cu ziua săptămânii, de forma „joi, 12 noiembrie, 14:00”. */
+export function formatWeekdayTime(value: string): string {
+  return WEEKDAY_TIME_FORMAT.format(new Date(value)).replace(' la ', ', ');
+}
+
+/** Un interval de zile, ca în calendarul din wireframe: „9 – 13 nov. 2026”. */
+export function formatDayRange(start: string, end: string): string {
+  const range = SHORT_DATE_FORMAT.formatRange(new Date(start), new Date(end));
+  return range.replace('–', ' – ').replace(/\s+/g, ' ');
+}
+
 /** Mărimea unui fișier, de forma „2,4 MB”. */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) {
