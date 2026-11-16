@@ -7,14 +7,19 @@ import { MemoryRouter } from 'react-router';
 
 import { theme } from '../theme';
 
+/** Opțiunile randării: adresa de pornire a routerului (implicit `/`). */
+export interface RenderOptions {
+  route?: string;
+}
+
 /** Randează o componentă cu aceiași provideri ca aplicația (Mantine, TanStack Query, router). */
-export function renderWithProviders(ui: ReactNode): RenderResult {
+export function renderWithProviders(ui: ReactNode, options: RenderOptions = {}): RenderResult {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
     <MantineProvider theme={theme} env="test">
       <Notifications />
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>{ui}</MemoryRouter>
+        <MemoryRouter initialEntries={[options.route ?? '/']}>{ui}</MemoryRouter>
       </QueryClientProvider>
     </MantineProvider>,
   );

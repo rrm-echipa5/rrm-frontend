@@ -1,5 +1,6 @@
 import { apiRequest } from '../../api/client';
 import type {
+  Certification,
   ResourceCategory,
   ResourceDetail,
   ResourceSummaryPage,
@@ -12,6 +13,10 @@ export interface ResourceListParams {
   size: number;
   q?: string;
   categoryId?: number;
+  /** Doar resursele cu aceste stări (`status`, repetat). */
+  statuses?: string[];
+  /** Doar resursele care au toate aceste tag-uri (`tag`, repetat). */
+  tags?: string[];
 }
 
 /** `GET /api/resource-categories` */
@@ -27,6 +32,12 @@ export function listResources(params: ResourceListParams): Promise<ResourceSumma
   }
   if (params.categoryId !== undefined) {
     query.set('categoryId', String(params.categoryId));
+  }
+  for (const status of params.statuses ?? []) {
+    query.append('status', status);
+  }
+  for (const tag of params.tags ?? []) {
+    query.append('tag', tag);
   }
   return apiRequest<ResourceSummaryPage>(`/resources?${query.toString()}`);
 }
@@ -55,4 +66,9 @@ export function updateResource(
 /** `DELETE /api/resources/{resourceId}` */
 export function deleteResource(resourceId: number): Promise<undefined> {
   return apiRequest<undefined>(`/resources/${String(resourceId)}`, { method: 'DELETE' });
+}
+
+/** `GET /api/users/me/certifications` */
+export function listMyCertifications(): Promise<Certification[]> {
+  return apiRequest<Certification[]>('/users/me/certifications');
 }
