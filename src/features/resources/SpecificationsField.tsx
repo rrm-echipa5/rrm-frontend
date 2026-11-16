@@ -7,7 +7,7 @@ import {
   type UseFormRegister,
 } from 'react-hook-form';
 
-import type { ResourceFormValues } from './resourceForm';
+import type { ResourceFormValues } from './resourceFormSchema';
 
 interface SpecificationsFieldProps {
   control: Control<ResourceFormValues>;

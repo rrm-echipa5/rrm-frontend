@@ -17,8 +17,8 @@ import { useState } from 'react';
 import type { ResourceSummary } from '../../api/types';
 import { DeleteResourceModal } from './DeleteResourceModal';
 import { ResourceFilters } from './ResourceFilters';
-import { errorMessage } from './resourceForm';
 import { ResourceFormModal } from './ResourceFormModal';
+import { errorMessage } from './resourceFormSchema';
 import { ResourcesTable } from './ResourcesTable';
 import { useResourceList } from './useResources';
 

@@ -2,7 +2,7 @@ import { Button, Group, Modal, Text } from '@mantine/core';
 import { notifications } from '@mantine/notifications';
 
 import type { ResourceSummary } from '../../api/types';
-import { errorMessage } from './resourceForm';
+import { errorMessage } from './resourceFormSchema';
 import { useDeleteResource } from './useResources';
 
 interface DeleteResourceModalProps {

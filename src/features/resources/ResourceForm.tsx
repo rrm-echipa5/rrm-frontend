@@ -3,13 +3,13 @@ import { Alert, Button, Group, Stack } from '@mantine/core';
 import { useForm } from 'react-hook-form';
 
 import type { ResourceDetail } from '../../api/types';
+import { ResourceFormFields } from './ResourceFormFields';
 import {
   EMPTY_FORM,
   resourceFormSchema,
   type ResourceFormValues,
   toFormValues,
-} from './resourceForm';
-import { ResourceFormFields } from './ResourceFormFields';
+} from './resourceFormSchema';
 import { useResourceFormSubmit } from './useResourceFormSubmit';
 import { useResourceCategories } from './useResources';
 

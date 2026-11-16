@@ -4,7 +4,12 @@ import type { UseFormReturn } from 'react-hook-form';
 
 import type { ApiError } from '../../api/client';
 import type { ResourceDetail } from '../../api/types';
-import { errorMessage, type ResourceFormValues, toFormField, toWriteRequest } from './resourceForm';
+import {
+  errorMessage,
+  type ResourceFormValues,
+  toFormField,
+  toWriteRequest,
+} from './resourceFormSchema';
 import { useSaveResource } from './useResources';
 
 interface ResourceFormSubmit {

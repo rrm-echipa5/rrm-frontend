@@ -3,7 +3,7 @@ import { useLocation } from 'react-router';
 
 import { CatalogFilterBar } from './CatalogFilterBar';
 import { ResourceCard } from './ResourceCard';
-import { errorMessage } from './resourceForm';
+import { errorMessage } from './resourceFormSchema';
 import { useCatalogFilters } from './useCatalogFilters';
 import { useResourceList } from './useResources';
 
