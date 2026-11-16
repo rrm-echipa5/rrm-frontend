@@ -32,6 +32,11 @@ if (typeof window !== 'undefined') {
   });
   window.ResizeObserver = ResizeObserverStub;
   window.HTMLElement.prototype.scrollIntoView = (): void => undefined;
+  // Textarea cu autosize ascultă încărcarea fonturilor.
+  Object.defineProperty(document, 'fonts', {
+    configurable: true,
+    value: { addEventListener: () => undefined, removeEventListener: () => undefined },
+  });
 }
 
 afterEach(() => {

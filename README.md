@@ -16,6 +16,15 @@ npm run dev
 
 Aplicația se deschide pe `http://localhost:5173`. Vite trimite cererile `/api` la backend-ul local (`http://localhost:8080`); altă adresă se poate da cu variabila `RRM_API_TARGET`.
 
+## Pagini
+
+| Pagină       | Ce face                                                                                                           |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| `/`          | Pagina de start, cu starea backend-ului și a bazei de date (`GET /api/health`)                                    |
+| `/resources` | Catalogul de resurse: căutare, filtru pe categorie, paginare, adăugare, modificare și ștergere (`/api/resources`) |
+
+Datele vin doar din backend-ul local; aplicația nu folosește date simulate. Testele automate (Vitest) simulează `fetch`, ca să poată rula fără server.
+
 ## Structura
 
 ```text
@@ -25,6 +34,8 @@ src/
   api/            # clientul HTTP și tipurile din rrm-api.yaml
   components/     # componente comune (cadrul paginilor)
   features/       # câte un folder pentru fiecare grup de pagini
+    home/         # pagina de start
+    resources/    # catalogul de resurse și formularul fișei
   test/           # configurarea testelor
 scripts/          # verificarea convențiilor Git (branch, commit, titlu PR)
 ```

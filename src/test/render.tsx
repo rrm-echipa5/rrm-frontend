@@ -11,7 +11,7 @@ import { theme } from '../theme';
 export function renderWithProviders(ui: ReactNode): RenderResult {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(
-    <MantineProvider theme={theme}>
+    <MantineProvider theme={theme} env="test">
       <Notifications />
       <QueryClientProvider client={queryClient}>
         <MemoryRouter>{ui}</MemoryRouter>
