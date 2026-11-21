@@ -53,6 +53,12 @@ export interface UserRef {
   email?: string | null;
 }
 
+/** Referința la o resursă (`ResourceRef`). */
+export interface ResourceRef {
+  id: number;
+  name: string;
+}
+
 /** Resursa, așa cum apare în catalog (`ResourceSummary`). */
 export interface ResourceSummary {
   id: number;
@@ -62,6 +68,63 @@ export interface ResourceSummary {
   status: ResourceStatus;
   approvalFlow: ApprovalFlow;
   tags: string[];
+  /** Nivelul de certificare cerut; `null` dacă resursa nu cere certificare. */
+  requiredCertificationLevel?: number | null;
+  /** Dacă utilizatorul curent are o certificare valabilă pentru resursă. */
+  userCertified?: boolean;
+}
+
+/** Regulile de utilizare de care ține cont calendarul (`UsageRuleSummary`). */
+export interface UsageRuleSummary {
+  minDurationMinutes: number;
+  maxDurationMinutes: number;
+  breakBetweenMinutes: number;
+  checkInDeadlineMinutes: number;
+  requiredCertificationLevel?: number | null;
+}
+
+/** Regulile de utilizare ale resursei, cu fluxul de aprobare (`UsageRule`). */
+export interface UsageRule extends UsageRuleSummary {
+  approvalFlow: ApprovalFlow;
+  updatedAt?: string;
+  updatedBy?: UserRef;
+}
+
+/** Tipul unui fișier al resursei (`ResourceFileType`). */
+export type ResourceFileType = 'MANUAL' | 'PHOTO';
+
+/** Un manual PDF sau o poză a resursei (`ResourceFile`). */
+export interface ResourceFile {
+  id: number;
+  type: ResourceFileType;
+  title: string;
+  fileName: string;
+  contentType: string;
+  sizeBytes: number;
+  url: string;
+  uploadedAt: string;
+}
+
+/** Enumerarea `TipLucrare` (`WorkType`). */
+export type WorkType = 'MAINTENANCE' | 'CALIBRATION';
+
+/** Starea unei blocări pentru mentenanță (`MaintenanceStatus`). */
+export type MaintenanceStatus = 'SCHEDULED' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+
+/** O blocare pentru mentenanță sau calibrare (`MaintenanceBlock`). */
+export interface MaintenanceBlock {
+  id: number;
+  resource: ResourceRef;
+  workType: WorkType;
+  start: string;
+  /** `null` pentru durată nedeterminată. */
+  end?: string | null;
+  reason?: string;
+  status: MaintenanceStatus;
+  createdBy: UserRef;
+  createdAt: string;
+  endedAt?: string | null;
+  cancelledReservationsCount?: number;
 }
 
 /** Fișa resursei (`ResourceDetail`). */
@@ -69,9 +132,31 @@ export interface ResourceDetail extends ResourceSummary {
   description: string | null;
   specifications: Record<string, string>;
   administrator: UserRef;
+  usageRule: UsageRule;
+  files: ResourceFile[];
+  /** Mentenanța în curs sau următoarea programată; `null` dacă nu există. */
+  currentOrNextMaintenance?: MaintenanceBlock | null;
   checkInQrCode: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Starea unei certificări (`CertificationStatus`). */
+export type CertificationStatus = 'ACTIVE' | 'EXPIRED' | 'REVOKED';
+
+/** Certificarea unui utilizator pentru o resursă (`Certification`). */
+export interface Certification {
+  id: number;
+  user: UserRef;
+  resource: ResourceRef;
+  level: number;
+  status: CertificationStatus;
+  grantedAt: string;
+  grantedBy: UserRef;
+  /** Data expirării (`YYYY-MM-DD`); `null` dacă certificarea nu expiră. */
+  expiresAt?: string | null;
+  revokedAt?: string | null;
+  revokeReason?: string | null;
 }
 
 /** Datele de paginare (`PageMeta`). */
@@ -98,4 +183,28 @@ export interface ResourceWriteRequest {
   tags: string[];
   approvalFlow: ApprovalFlow;
   administratorId?: number;
+}
+
+/** Ce ocupă un interval din calendar; `PENDING` include și `PENDING_ADMIN`. */
+export type CalendarEntryType = 'CONFIRMED' | 'PENDING' | 'IN_PROGRESS' | 'MAINTENANCE';
+
+/** Un interval ocupat din calendarul resursei (`CalendarEntry`). */
+export interface CalendarEntry {
+  start: string;
+  end: string;
+  type: CalendarEntryType;
+  /** Dacă intervalul este al utilizatorului curent. */
+  own: boolean;
+  /** Doar pentru rezervările proprii; `null` pentru ale altora și pentru mentenanță. */
+  reservationId?: number | null;
+}
+
+/** Calendarul disponibilității unei resurse (`ResourceCalendar`). */
+export interface ResourceCalendar {
+  resource: ResourceRef;
+  start: string;
+  end: string;
+  rules: UsageRuleSummary;
+  /** Intervalele ocupate, ordonate după început; restul intervalului este liber. */
+  entries: CalendarEntry[];
 }
