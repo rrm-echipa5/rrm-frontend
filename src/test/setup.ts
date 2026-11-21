@@ -42,4 +42,5 @@ if (typeof window !== 'undefined') {
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
+  vi.unstubAllEnvs();
 });
