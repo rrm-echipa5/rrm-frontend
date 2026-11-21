@@ -1,7 +1,7 @@
 import { Alert, Center, Loader, Modal } from '@mantine/core';
 
 import { ResourceForm } from './ResourceForm';
-import { errorMessage } from './resourceForm';
+import { errorMessage } from './resourceFormSchema';
 import { useResourceDetail } from './useResources';
 
 interface ResourceFormModalProps {
