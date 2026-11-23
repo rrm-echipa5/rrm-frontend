@@ -9,6 +9,7 @@ import {
 
 import type { ApiError } from '../../api/client';
 import type {
+  Certification,
   ResourceCategory,
   ResourceDetail,
   ResourceSummaryPage,
@@ -18,6 +19,7 @@ import {
   createResource,
   deleteResource,
   getResource,
+  listMyCertifications,
   listResourceCategories,
   listResources,
   type ResourceListParams,
@@ -54,6 +56,14 @@ export function useResourceDetail(
     queryKey: [...RESOURCES_KEY, 'detail', resourceId],
     queryFn: () => getResource(resourceId ?? 0),
     enabled: resourceId !== null,
+  });
+}
+
+/** Certificările utilizatorului curent, afișate în fișa resursei. */
+export function useMyCertifications(): UseQueryResult<Certification[], ApiError> {
+  return useQuery<Certification[], ApiError>({
+    queryKey: ['certifications', 'me'],
+    queryFn: listMyCertifications,
   });
 }
 
