@@ -35,6 +35,47 @@ export function formatDateTime(value: string): string {
   return DATE_TIME_FORMAT.format(new Date(value));
 }
 
+const WEEKDAY_TIME_FORMAT = new Intl.DateTimeFormat('ro-RO', {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  hour: '2-digit',
+  minute: '2-digit',
+});
+
+const SHORT_DATE_FORMAT = new Intl.DateTimeFormat('ro-RO', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+/** Un moment cu ziua săptămânii, de forma „joi, 12 noiembrie, 14:00”. */
+export function formatWeekdayTime(value: string): string {
+  return WEEKDAY_TIME_FORMAT.format(new Date(value)).replace(' la ', ', ');
+}
+
+/**
+ * Un interval de zile, ca în calendarul din wireframe: „9 – 13 nov. 2026”. Separatorul din
+ * `formatRange` depinde de datele ICU: „9–13 nov. 2026” fără spații în aceeași lună, cu spații
+ * înguste (U+2009) între luni diferite, iar unele versiuni pot pune `-`. Îl aducem la „ – ”.
+ */
+export function formatDayRange(start: string, end: string): string {
+  const range = SHORT_DATE_FORMAT.formatRange(new Date(start), new Date(end));
+  return range.replace(/\s*[–-]\s*/u, ' – ').replace(/\s+/gu, ' ');
+}
+
+/**
+ * Un interval orar, de forma „joi, 12 noiembrie, 10:00 – 12:00”; dacă se termină în altă zi,
+ * „joi, 12 noiembrie, 22:00 – vineri, 13 noiembrie, 02:00”.
+ */
+export function formatTimeRange(start: string, end: string): string {
+  const sameDay = new Date(start).toDateString() === new Date(end).toDateString();
+  const endText = sameDay ? TIME_FORMAT.format(new Date(end)) : formatWeekdayTime(end);
+  return `${formatWeekdayTime(start)} – ${endText}`;
+}
+
+const TIME_FORMAT = new Intl.DateTimeFormat('ro-RO', { hour: '2-digit', minute: '2-digit' });
+
 /** Mărimea unui fișier, de forma „2,4 MB”. */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) {

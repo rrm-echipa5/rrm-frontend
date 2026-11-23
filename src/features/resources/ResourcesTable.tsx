@@ -6,11 +6,16 @@ import { APPROVAL_FLOW_LABELS, STATUS_BADGES } from './resourceLabels';
 
 interface ResourcesTableProps {
   resources: ResourceSummary[];
-  onEdit: (resource: ResourceSummary) => void;
-  onDelete: (resource: ResourceSummary) => void;
+  /** `null` dacă rolul curent nu poate modifica resurse. */
+  onEdit: ((resource: ResourceSummary) => void) | null;
+  /** `null` dacă rolul curent nu poate scoate resurse din catalog (doar `SYSTEM_ADMIN` poate). */
+  onDelete: ((resource: ResourceSummary) => void) | null;
 }
 
-/** Tabelul catalogului de resurse, cu acțiunile de modificare și ștergere pe fiecare rând. */
+/**
+ * Tabelul catalogului de resurse, cu acțiunile de modificare și ștergere pe fiecare rând; o acțiune
+ * apare doar dacă rolul curent o are.
+ */
 export function ResourcesTable({
   resources,
   onEdit,
@@ -43,31 +48,7 @@ export function ResourcesTable({
         </Group>
       </Table.Td>
       <Table.Td>
-        <Group gap={4} wrap="nowrap" justify="flex-end">
-          <Tooltip label="Modifică">
-            <ActionIcon
-              variant="subtle"
-              aria-label={`Modifică ${resource.name}`}
-              onClick={() => {
-                onEdit(resource);
-              }}
-            >
-              <IconPencil size={18} />
-            </ActionIcon>
-          </Tooltip>
-          <Tooltip label="Scoate din catalog">
-            <ActionIcon
-              variant="subtle"
-              color="red"
-              aria-label={`Șterge ${resource.name}`}
-              onClick={() => {
-                onDelete(resource);
-              }}
-            >
-              <IconTrash size={18} />
-            </ActionIcon>
-          </Tooltip>
-        </Group>
+        <RowActions resource={resource} onEdit={onEdit} onDelete={onDelete} />
       </Table.Td>
     </Table.Tr>
   ));
@@ -89,5 +70,42 @@ export function ResourcesTable({
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>
     </Table.ScrollContainer>
+  );
+}
+
+type RowActionsProps = Omit<ResourcesTableProps, 'resources'> & { resource: ResourceSummary };
+
+/** Butoanele de modificare și ștergere ale unui rând, doar cele permise rolului curent. */
+function RowActions({ resource, onEdit, onDelete }: RowActionsProps): React.JSX.Element {
+  return (
+    <Group gap={4} wrap="nowrap" justify="flex-end">
+      {onEdit && (
+        <Tooltip label="Modifică">
+          <ActionIcon
+            variant="subtle"
+            aria-label={`Modifică ${resource.name}`}
+            onClick={() => {
+              onEdit(resource);
+            }}
+          >
+            <IconPencil size={18} />
+          </ActionIcon>
+        </Tooltip>
+      )}
+      {onDelete && (
+        <Tooltip label="Scoate din catalog">
+          <ActionIcon
+            variant="subtle"
+            color="red"
+            aria-label={`Șterge ${resource.name}`}
+            onClick={() => {
+              onDelete(resource);
+            }}
+          >
+            <IconTrash size={18} />
+          </ActionIcon>
+        </Tooltip>
+      )}
+    </Group>
   );
 }

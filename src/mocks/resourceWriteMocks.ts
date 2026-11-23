@@ -2,8 +2,15 @@
 // RESOURCE_ADMIN și SYSTEM_ADMIN, modifică administratorul resursei sau SYSTEM_ADMIN, iar
 // administratorul îl schimbă și resursa o scoate din catalog doar SYSTEM_ADMIN.
 
-import type { ApprovalFlow, FieldError, Problem, ResourceWriteRequest } from '../api/types';
+import type {
+  ApprovalFlow,
+  FieldError,
+  Problem,
+  ReservationStatus,
+  ResourceWriteRequest,
+} from '../api/types';
 import {
+  allReservations,
   currentUser,
   findResource,
   findUser,
@@ -12,13 +19,17 @@ import {
   replaceResource,
 } from './mockDb';
 import { SEED_CATEGORIES, type SeedResource } from './seedData';
-import { SEED_RESERVATIONS } from './seedRecords';
 
 /** Rezultatul unei operații: resursa salvată sau eroarea `application/problem+json`. */
 export type WriteResult = { ok: true; resource: SeedResource } | { ok: false; problem: Problem };
 
 const APPROVAL_FLOWS: ApprovalFlow[] = ['AUTO', 'COORDINATOR', 'COORDINATOR_AND_ADMIN'];
-const ACTIVE_RESERVATION_STATUSES = ['PENDING', 'PENDING_ADMIN', 'CONFIRMED', 'IN_PROGRESS'];
+const ACTIVE_RESERVATION_STATUSES: ReservationStatus[] = [
+  'PENDING',
+  'PENDING_ADMIN',
+  'CONFIRMED',
+  'IN_PROGRESS',
+];
 
 /** Regulile implicite la creare, din descrierea `POST /resources` din `rrm-api.yaml`. */
 const DEFAULT_RULE: SeedResource['rule'] = {
@@ -169,7 +180,7 @@ export function deleteResource(resourceId: number, now: Date): WriteResult {
   if (!isSystemAdmin()) {
     return forbidden('Doar administratorul de sistem poate scoate resurse din catalog.');
   }
-  const hasActive = SEED_RESERVATIONS.some(
+  const hasActive = allReservations().some(
     (reservation) =>
       reservation.resourceId === resourceId &&
       ACTIVE_RESERVATION_STATUSES.includes(reservation.status) &&

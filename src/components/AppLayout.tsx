@@ -4,6 +4,7 @@ import { NavLink, Outlet } from 'react-router';
 const NAV_LINKS = [
   { to: '/', label: 'Acasă' },
   { to: '/catalog', label: 'Catalog resurse' },
+  { to: '/reservations', label: 'Rezervările mele' },
   { to: '/resources', label: 'Resurse' },
 ];
 
