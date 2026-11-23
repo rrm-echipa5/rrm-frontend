@@ -18,6 +18,12 @@ import {
 import { SelectionSummary } from './SelectionSummary';
 import { useResourceCalendar } from './useResourceCalendar';
 
+/** Sloturile trecute sau ocupate: gri, ca în legenda din wireframe-ul 4.1, și fără click. */
+const UNAVAILABLE_SLOT_PROPS = {
+  'data-unavailable': true,
+  style: { cursor: 'not-allowed', backgroundColor: 'var(--mantine-color-gray-1)' },
+};
+
 interface ResourceWeekCalendarProps {
   resourceId: number;
   /** Dacă se pot alege intervale (nu pentru o resursă defectă). */
@@ -91,9 +97,7 @@ export function ResourceWeekCalendar({
           mode={selectable && calendar.data ? 'default' : 'static'}
           withDragSlotSelect={selectable}
           getTimeSlotProps={(slot) =>
-            isSlotUnavailable(slot, entries, new Date())
-              ? { 'data-unavailable': true, style: { cursor: 'not-allowed' } }
-              : undefined
+            isSlotUnavailable(slot, entries, new Date()) ? UNAVAILABLE_SLOT_PROPS : undefined
           }
           onTimeSlotClick={({ slotStart }) => {
             if (calendar.data) {

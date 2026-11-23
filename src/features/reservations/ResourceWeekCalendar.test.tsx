@@ -52,6 +52,22 @@ describe('ResourceWeekCalendar', () => {
     expect(screen.queryByText(/Selecția ta:/)).not.toBeInTheDocument();
   });
 
+  it('marchează cu gri sloturile ocupate și pe cele trecute', async () => {
+    renderWithProviders(<ResourceWeekCalendar resourceId={7} selectable />);
+    await screen.findByText('Rezervarea ta', { selector: '[class*="Event"] *' });
+
+    // Vineri 09:30 e ocupat de rezervarea 1046, marți 10:00 a trecut, joi 14:00 e liber.
+    const busy = screen.getByRole('button', { name: 'Interval 2026-11-13 09:30:00 - 10:00:00' });
+    const past = screen.getByRole('button', { name: 'Interval 2026-11-10 10:00:00 - 10:30:00' });
+    const free = screen.getByRole('button', { name: 'Interval 2026-11-12 14:00:00 - 14:30:00' });
+
+    for (const slot of [busy, past]) {
+      expect(slot).toHaveAttribute('data-unavailable');
+      expect(slot.style.backgroundColor).toBe('var(--mantine-color-gray-1)');
+    }
+    expect(free).not.toHaveAttribute('data-unavailable');
+  });
+
   it('la tragere, intervalul ține până la sfârșitul ultimului slot', async () => {
     renderWithProviders(<ResourceWeekCalendar resourceId={7} selectable />);
     await screen.findByText('Rezervarea ta', { selector: '[class*="Event"] *' });
