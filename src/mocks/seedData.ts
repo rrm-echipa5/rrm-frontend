@@ -11,6 +11,7 @@ export type Role = 'STUDENT' | 'RESEARCHER' | 'RESOURCE_ADMIN' | 'SYSTEM_ADMIN';
 /** Un rând din tabelul `users`, fără parolă și secretul 2FA. */
 export interface SeedUser extends UserRef {
   role: Role;
+  twoFactorEnabled: boolean;
 }
 
 /** Momentul la care sunt create rândurile fără dată explicită în seed. */
@@ -18,13 +19,55 @@ export const SEED_LOADED_AT = '2026-11-08T19:00:00+02:00';
 
 /** Tabelul `users`. */
 export const SEED_USERS: SeedUser[] = [
-  { id: 1, name: 'Elena Marin', email: 'elena.marin@usv.ro', role: 'SYSTEM_ADMIN' },
-  { id: 2, name: 'Andrei Rusu', email: 'andrei.rusu@usv.ro', role: 'RESEARCHER' },
-  { id: 3, name: 'Ana Popescu', email: 'ana.popescu@student.usv.ro', role: 'STUDENT' },
-  { id: 4, name: 'Mihai Ionescu', email: 'mihai.ionescu@usv.ro', role: 'RESOURCE_ADMIN' },
-  { id: 5, name: 'Ioana Dumitru', email: 'ioana.dumitru@student.usv.ro', role: 'STUDENT' },
-  { id: 6, name: 'Radu Stan', email: 'radu.stan@usv.ro', role: 'RESEARCHER' },
-  { id: 7, name: 'Vlad Popa', email: 'vlad.popa@usv.ro', role: 'RESOURCE_ADMIN' },
+  {
+    id: 1,
+    name: 'Elena Marin',
+    email: 'elena.marin@usv.ro',
+    role: 'SYSTEM_ADMIN',
+    twoFactorEnabled: true,
+  },
+  {
+    id: 2,
+    name: 'Andrei Rusu',
+    email: 'andrei.rusu@usv.ro',
+    role: 'RESEARCHER',
+    twoFactorEnabled: true,
+  },
+  {
+    id: 3,
+    name: 'Ana Popescu',
+    email: 'ana.popescu@student.usv.ro',
+    role: 'STUDENT',
+    twoFactorEnabled: true,
+  },
+  {
+    id: 4,
+    name: 'Mihai Ionescu',
+    email: 'mihai.ionescu@usv.ro',
+    role: 'RESOURCE_ADMIN',
+    twoFactorEnabled: false,
+  },
+  {
+    id: 5,
+    name: 'Ioana Dumitru',
+    email: 'ioana.dumitru@student.usv.ro',
+    role: 'STUDENT',
+    twoFactorEnabled: false,
+  },
+  {
+    id: 6,
+    name: 'Radu Stan',
+    email: 'radu.stan@usv.ro',
+    role: 'RESEARCHER',
+    twoFactorEnabled: false,
+  },
+  {
+    id: 7,
+    name: 'Vlad Popa',
+    email: 'vlad.popa@usv.ro',
+    role: 'RESOURCE_ADMIN',
+    twoFactorEnabled: false,
+  },
 ];
 
 /** Tabelul `resource_categories`. */

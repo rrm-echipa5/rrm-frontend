@@ -15,6 +15,8 @@ import { IconPlus } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import type { ResourceSummary } from '../../api/types';
+import { type ResourcePermissions, resourcePermissions } from '../users/permissions';
+import { useCurrentUser } from '../users/useCurrentUser';
 import { DeleteResourceModal } from './DeleteResourceModal';
 import { ResourceFilters } from './ResourceFilters';
 import { ResourceFormModal } from './ResourceFormModal';
@@ -34,6 +36,7 @@ export function ResourcesPage(): React.JSX.Element {
   const [page, setPage] = useState(1);
   const [formState, setFormState] = useState<FormState>({ open: false });
   const [toDelete, setToDelete] = useState<ResourceSummary | null>(null);
+  const permissions = resourcePermissions(useCurrentUser().data?.role ?? null);
 
   const resources = useResourceList({
     page: page - 1,
@@ -44,17 +47,12 @@ export function ResourcesPage(): React.JSX.Element {
 
   return (
     <Stack gap="md" py="md">
-      <Group justify="space-between">
-        <Title order={2}>Resurse</Title>
-        <Button
-          leftSection={<IconPlus size={16} />}
-          onClick={() => {
-            setFormState({ open: true, resourceId: null });
-          }}
-        >
-          Adaugă resursă
-        </Button>
-      </Group>
+      <PageHeader
+        canCreate={permissions.canCreate}
+        onCreate={() => {
+          setFormState({ open: true, resourceId: null });
+        }}
+      />
       <ResourceFilters
         search={search}
         categoryId={categoryId}
@@ -70,6 +68,7 @@ export function ResourcesPage(): React.JSX.Element {
       <Card withBorder p={0}>
         <ResourceListContent
           state={resources}
+          permissions={permissions}
           onEdit={(resource) => {
             setFormState({ open: true, resourceId: resource.id });
           }}
@@ -98,14 +97,35 @@ export function ResourcesPage(): React.JSX.Element {
   );
 }
 
+interface PageHeaderProps {
+  canCreate: boolean;
+  onCreate: () => void;
+}
+
+/** Titlul paginii, cu butonul de adăugare dacă rolul curent poate adăuga resurse. */
+function PageHeader({ canCreate, onCreate }: PageHeaderProps): React.JSX.Element {
+  return (
+    <Group justify="space-between">
+      <Title order={2}>Resurse</Title>
+      {canCreate && (
+        <Button leftSection={<IconPlus size={16} />} onClick={onCreate}>
+          Adaugă resursă
+        </Button>
+      )}
+    </Group>
+  );
+}
+
 interface ResourceListContentProps {
   state: ReturnType<typeof useResourceList>;
+  permissions: ResourcePermissions;
   onEdit: (resource: ResourceSummary) => void;
   onDelete: (resource: ResourceSummary) => void;
 }
 
 function ResourceListContent({
   state,
+  permissions,
   onEdit,
   onDelete,
 }: ResourceListContentProps): React.JSX.Element {
@@ -130,5 +150,11 @@ function ResourceListContent({
       </Text>
     );
   }
-  return <ResourcesTable resources={state.data.content} onEdit={onEdit} onDelete={onDelete} />;
+  return (
+    <ResourcesTable
+      resources={state.data.content}
+      onEdit={permissions.canEdit ? onEdit : null}
+      onDelete={permissions.canDelete ? onDelete : null}
+    />
+  );
 }

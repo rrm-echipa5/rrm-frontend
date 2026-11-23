@@ -1,7 +1,10 @@
 import { http, HttpResponse } from 'msw';
 
 import type { Problem, ResourceDetail, ResourceWriteRequest } from '../api/types';
+import { resourceCalendar } from './calendarMocks';
 import { catalogMoment } from './mockClock';
+import { requestHandlers } from './requestHandlers';
+import { reservationHandlers } from './reservationHandlers';
 import { catalogPage, type CatalogQuery, myCertifications, resourceDetail } from './resourceMocks';
 import {
   createResource,
@@ -11,6 +14,7 @@ import {
   type WriteResult,
 } from './resourceWriteMocks';
 import { SEED_CATEGORIES } from './seedData';
+import { currentUserProfile } from './userMocks';
 
 function problem(status: number, code: string, detail: string): HttpResponse<Problem> {
   return problemResponse({
@@ -96,8 +100,12 @@ function parseCatalogQuery(url: URL): CatalogQuery | string {
   };
 }
 
-/** Handlerele MSW pentru endpoint-urile catalogului și ale fișei resursei (tag-ul Resurse). */
+/** Handlerele MSW pentru endpoint-urile implementate în mock, în ordinea din `rrm-api.yaml`. */
 export const handlers = [
+  http.get('/api/health', () => HttpResponse.json({ status: 'ok', database: 'ok' })),
+
+  http.get('/api/users/me', () => HttpResponse.json(currentUserProfile())),
+
   http.get('/api/resource-categories', () => HttpResponse.json(SEED_CATEGORIES)),
 
   http.get('/api/resources', ({ request }) => {
@@ -139,6 +147,20 @@ export const handlers = [
     return result.ok ? new HttpResponse(null, { status: 204 }) : problemResponse(result.problem);
   }),
 
+  http.get('/api/resources/:resourceId/calendar', ({ request, params }) => {
+    const url = new URL(request.url);
+    const result = resourceCalendar(
+      Number(params['resourceId']),
+      url.searchParams.get('start'),
+      url.searchParams.get('end'),
+    );
+    if (!result.ok) {
+      const code = result.status === 404 ? 'NOT_FOUND' : 'VALIDATION_FAILED';
+      return problem(result.status, code, result.detail);
+    }
+    return HttpResponse.json(result.calendar);
+  }),
+
   http.get('/api/resources/:resourceId/files/:fileId', ({ params }) =>
     problem(
       404,
@@ -150,4 +172,8 @@ export const handlers = [
   http.get('/api/users/me/certifications', () =>
     HttpResponse.json(myCertifications(catalogMoment())),
   ),
+
+  ...reservationHandlers,
+
+  ...requestHandlers,
 ];

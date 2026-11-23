@@ -16,6 +16,8 @@ export interface Problem {
   instance?: string;
   timestamp?: string;
   errors?: FieldError[];
+  /** Doar la `409 SLOT_UNAVAILABLE` (`SlotConflictProblem`): intervalele libere propuse. */
+  alternativeSlots?: AlternativeSlot[];
 }
 
 /** Răspunsul `GET /api/health`. */
@@ -53,6 +55,26 @@ export interface UserRef {
   email?: string | null;
 }
 
+/** Enumerarea `Rol`. */
+export type Role = 'STUDENT' | 'RESEARCHER' | 'RESOURCE_ADMIN' | 'SYSTEM_ADMIN';
+
+/** Referința la o echipă de cercetare (`TeamRef`). */
+export interface TeamRef {
+  id: number;
+  name: string;
+  coordinator?: UserRef;
+}
+
+/** Profilul utilizatorului curent (`CurrentUser`, `GET /users/me`). */
+export interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: Role;
+  twoFactorEnabled: boolean;
+  teams: TeamRef[];
+}
+
 /** Referința la o resursă (`ResourceRef`). */
 export interface ResourceRef {
   id: number;
@@ -74,13 +96,17 @@ export interface ResourceSummary {
   userCertified?: boolean;
 }
 
-/** Regulile de utilizare ale resursei (`UsageRule`, cu `UsageRuleSummary`). */
-export interface UsageRule {
+/** Regulile de utilizare de care ține cont calendarul (`UsageRuleSummary`). */
+export interface UsageRuleSummary {
   minDurationMinutes: number;
   maxDurationMinutes: number;
   breakBetweenMinutes: number;
   checkInDeadlineMinutes: number;
   requiredCertificationLevel?: number | null;
+}
+
+/** Regulile de utilizare ale resursei, cu fluxul de aprobare (`UsageRule`). */
+export interface UsageRule extends UsageRuleSummary {
   approvalFlow: ApprovalFlow;
   updatedAt?: string;
   updatedBy?: UserRef;
@@ -179,4 +205,138 @@ export interface ResourceWriteRequest {
   tags: string[];
   approvalFlow: ApprovalFlow;
   administratorId?: number;
+}
+
+/** Ce ocupă un interval din calendar; `PENDING` include și `PENDING_ADMIN`. */
+export type CalendarEntryType = 'CONFIRMED' | 'PENDING' | 'IN_PROGRESS' | 'MAINTENANCE';
+
+/** Un interval ocupat din calendarul resursei (`CalendarEntry`). */
+export interface CalendarEntry {
+  start: string;
+  end: string;
+  type: CalendarEntryType;
+  /** Dacă intervalul este al utilizatorului curent. */
+  own: boolean;
+  /** Doar pentru rezervările proprii; `null` pentru ale altora și pentru mentenanță. */
+  reservationId?: number | null;
+}
+
+/** Calendarul disponibilității unei resurse (`ResourceCalendar`). */
+export interface ResourceCalendar {
+  resource: ResourceRef;
+  start: string;
+  end: string;
+  rules: UsageRuleSummary;
+  /** Intervalele ocupate, ordonate după început; restul intervalului este liber. */
+  entries: CalendarEntry[];
+}
+
+/** Enumerarea `StareRezervare` (diagrama de stări 7.1). */
+export type ReservationStatus =
+  | 'PENDING'
+  | 'PENDING_ADMIN'
+  | 'CONFIRMED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'AUTO_CANCELLED';
+
+/** Etapa unei aprobări (`ApprovalStage`). */
+export type ApprovalStage = 'COORDINATOR' | 'RESOURCE_ADMIN';
+
+/** Decizia unei aprobări (`Decision`). */
+export type Decision = 'APPROVED' | 'REJECTED';
+
+/** Referința la un proiect (`ProjectRef`). */
+export interface ProjectRef {
+  id: number;
+  title: string;
+}
+
+/** O rezervare din lista „Rezervările mele” (`ReservationSummary`). */
+export interface ReservationSummary {
+  id: number;
+  resource: ResourceRef;
+  project: ProjectRef;
+  start: string;
+  end: string;
+  status: ReservationStatus;
+}
+
+/** O pagină de rezervări (`ReservationSummaryPage`). */
+export interface ReservationSummaryPage {
+  content: ReservationSummary[];
+  page: PageMeta;
+}
+
+/** O decizie de aprobare sau respingere (`Approval`). */
+export interface Approval {
+  id: number;
+  stage: ApprovalStage;
+  decision: Decision;
+  approver: UserRef;
+  decidedAt: string;
+  /** Motivul, obligatoriu la respingere. */
+  comment?: string | null;
+}
+
+/** Anularea unei rezervări (`Cancellation`). */
+export interface Cancellation {
+  cancelledAt: string;
+  /** Lipsește la anularea automată (fără check-in). */
+  cancelledBy?: UserRef | null;
+  /** `null` dacă solicitantul nu a dat un motiv. */
+  reason: string | null;
+}
+
+/** Detaliile unei rezervări (`Reservation`). */
+export interface Reservation extends ReservationSummary {
+  requester: UserRef;
+  hours: number;
+  purpose: string;
+  approvalFlow: ApprovalFlow;
+  checkInDeadline: string;
+  checkInAt?: string | null;
+  checkOutAt?: string | null;
+  createdAt: string;
+  /** Prezent doar pentru rezervările anulate. */
+  cancellation?: Cancellation | null;
+  /** Deciziile luate până acum (0, 1 sau 2), în ordine. */
+  approvals: Approval[];
+}
+
+/** Corpul opțional al anulării (`CancelReservationRequest`). */
+export interface CancelReservationRequest {
+  reason?: string;
+}
+
+/** Proiectul utilizatorului, cu bugetul de ore (`ProjectBudget`, `GET /users/me/projects`). */
+export interface ProjectBudget {
+  id: number;
+  title: string;
+  team: TeamRef;
+  budgetHours: number;
+  /** Orele rezervărilor confirmate, în desfășurare sau finalizate. */
+  usedHours: number;
+  remainingHours: number;
+}
+
+/** Cererea de rezervare (`ReservationCreateRequest`, `POST /reservations`). */
+export interface ReservationCreateRequest {
+  resourceId: number;
+  projectId: number;
+  start: string;
+  end: string;
+  /** Scopul utilizării, 3-500 de caractere. */
+  purpose: string;
+}
+
+/** Un interval liber propus când cel cerut e ocupat (`AlternativeSlot`). */
+export interface AlternativeSlot {
+  resource: ResourceRef;
+  start: string;
+  end: string;
+  /** `true` pentru aceeași resursă, `false` pentru o resursă similară. */
+  sameResource: boolean;
 }
