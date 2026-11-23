@@ -6,6 +6,7 @@ import {
   type SeedResource,
   type SeedUser,
 } from './seedData';
+import { SEED_RESERVATIONS, type SeedReservation } from './seedReservations';
 
 /**
  * Utilizatorul în numele căruia răspunde mock-ul, ca `RRM_DEMO_USER_ID` din backend până la
@@ -43,11 +44,13 @@ export interface ResourceTimestamps {
 
 let resources: SeedResource[] = [];
 let timestamps = new Map<number, ResourceTimestamps>();
+let reservations: SeedReservation[] = [];
 
-/** Readuce resursele la datele de test (la pornire și între teste). */
+/** Readuce resursele și rezervările la datele de test (la pornire și între teste). */
 export function resetMockDb(): void {
   resources = structuredClone(SEED_RESOURCES);
   timestamps = new Map();
+  reservations = structuredClone(SEED_RESERVATIONS);
 }
 
 resetMockDb();
@@ -89,4 +92,29 @@ export function removeResource(resourceId: number): void {
 /** Momentele de creare și modificare, dacă resursa a fost adăugată sau modificată în mock. */
 export function resourceTimestamps(resourceId: number): Partial<ResourceTimestamps> {
   return timestamps.get(resourceId) ?? {};
+}
+
+/** Toate rezervările, cu modificările făcute în mock (anulări, cereri noi). */
+export function allReservations(): readonly SeedReservation[] {
+  return reservations;
+}
+
+/** Rezervarea cu id-ul dat, dacă există. */
+export function findReservation(reservationId: number): SeedReservation | undefined {
+  return reservations.find((candidate) => candidate.id === reservationId);
+}
+
+/** Înlocuiește o rezervare existentă (de exemplu, la anulare). */
+export function replaceReservation(reservation: SeedReservation): void {
+  reservations = reservations.map((candidate) =>
+    candidate.id === reservation.id ? reservation : candidate,
+  );
+}
+
+/** Adaugă o rezervare cu id-ul următor, ca secvența din baza de date. */
+export function insertReservation(build: (id: number) => SeedReservation): SeedReservation {
+  const id = Math.max(0, ...reservations.map((candidate) => candidate.id)) + 1;
+  const created = build(id);
+  reservations = [...reservations, created];
+  return created;
 }

@@ -2,10 +2,11 @@ import { Alert, Center, Loader, Pagination, SimpleGrid, Stack, Text, Title } fro
 import { useLocation } from 'react-router';
 
 import { CatalogFilterBar } from './CatalogFilterBar';
+import { formatTimeRange } from './formatters';
 import { ResourceCard } from './ResourceCard';
 import { errorMessage } from './resourceFormSchema';
 import { useCatalogFilters } from './useCatalogFilters';
-import { useResourceList } from './useResources';
+import { useAvailableResources, useResourceList } from './useResources';
 
 /** Câte resurse încap pe o pagină: 4 rânduri de câte 3 carduri pe desktop. */
 const CATALOG_PAGE_SIZE = 12;
@@ -14,21 +15,28 @@ const CATALOG_PAGE_SIZE = 12;
 export function CatalogPage(): React.JSX.Element {
   const { filters, update, setPage, reset } = useCatalogFilters();
   const { search } = useLocation();
-  const resources = useResourceList({
+  const common = {
     page: filters.page - 1,
     size: CATALOG_PAGE_SIZE,
     ...(filters.q ? { q: filters.q } : {}),
     ...(filters.categoryId === null ? {} : { categoryId: filters.categoryId }),
-    statuses: filters.statuses,
     tags: filters.tags,
-  });
+  };
+  // Cu un interval ales, rezultatele vin din căutarea resurselor libere (KAN-71).
+  const available = useAvailableResources(
+    filters.interval === null ? null : { ...common, ...filters.interval },
+  );
+  const catalog = useResourceList({ ...common, statuses: filters.statuses });
+  const resources = filters.interval === null ? catalog : available;
 
   return (
     <Stack gap="md" py="md">
       <div>
         <Title order={2}>Catalog resurse</Title>
         <Text c="dimmed">
-          Toate resursele de cercetare ale universității, cu starea lor actuală.
+          {filters.interval === null
+            ? 'Toate resursele de cercetare ale universității, cu starea lor actuală.'
+            : `Resursele libere ${formatTimeRange(filters.interval.start, filters.interval.end)}.`}
         </Text>
       </div>
       <CatalogFilterBar filters={filters} onChange={update} onReset={reset} />

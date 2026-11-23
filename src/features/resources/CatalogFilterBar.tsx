@@ -4,6 +4,7 @@ import { IconSearch } from '@tabler/icons-react';
 import { useState } from 'react';
 
 import type { ResourceStatus } from '../../api/types';
+import { AvailabilityFilter } from './AvailabilityFilter';
 import { STATUS_BADGES } from './resourceLabels';
 import type { CatalogFilters, CatalogFiltersUpdate } from './useCatalogFilters';
 import { useResourceCategories } from './useResources';
@@ -26,6 +27,8 @@ export function CatalogFilterBar({
   const options = (categories.data ?? []).map((c) => ({ value: String(c.id), label: c.name }));
   // Textul se scrie imediat în câmp, dar ajunge în adresă (și în API) după o scurtă pauză.
   const [search, setSearch] = useState(filters.q);
+  // Cheia recreează filtrul de interval după „Șterge filtrele”, cu ciorna golită.
+  const [resetCount, setResetCount] = useState(0);
   const commitSearch = useDebouncedCallback((value: string) => {
     onChange({ q: value.trim() });
   }, 300);
@@ -33,7 +36,8 @@ export function CatalogFilterBar({
     filters.q !== '' ||
     filters.categoryId !== null ||
     filters.statuses.length > 0 ||
-    filters.tags.length > 0;
+    filters.tags.length > 0 ||
+    filters.interval !== null;
 
   return (
     <Card withBorder padding="md">
@@ -68,19 +72,15 @@ export function CatalogFilterBar({
           }}
         />
       </SimpleGrid>
-      <Group mt="sm" justify="space-between">
-        <StatusChips
-          value={filters.statuses}
-          onChange={(statuses) => {
-            onChange({ statuses });
-          }}
-        />
+      <Group mt="sm" justify="space-between" align="flex-start">
+        <IntervalAndStatus key={resetCount} filters={filters} onChange={onChange} />
         {hasFilters && (
           <Button
             variant="subtle"
             size="xs"
             onClick={() => {
               setSearch('');
+              setResetCount((count) => count + 1);
               onReset();
             }}
           >
@@ -89,6 +89,36 @@ export function CatalogFilterBar({
         )}
       </Group>
     </Card>
+  );
+}
+
+interface IntervalAndStatusProps {
+  filters: CatalogFilters;
+  onChange: (changes: CatalogFiltersUpdate) => void;
+}
+
+/**
+ * Intervalul în care resursa trebuie să fie liberă și stările. Cu un interval ales, rezultatele
+ * sunt doar resursele libere, deci filtrul de stare nu se mai arată.
+ */
+function IntervalAndStatus({ filters, onChange }: IntervalAndStatusProps): React.JSX.Element {
+  return (
+    <Group gap="md" align="flex-start">
+      <AvailabilityFilter
+        interval={filters.interval}
+        onChange={(interval) => {
+          onChange({ interval });
+        }}
+      />
+      {filters.interval === null && (
+        <StatusChips
+          value={filters.statuses}
+          onChange={(statuses) => {
+            onChange({ statuses });
+          }}
+        />
+      )}
+    </Group>
   );
 }
 

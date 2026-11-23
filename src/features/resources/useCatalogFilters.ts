@@ -10,6 +10,8 @@ export interface CatalogFilters {
   categoryId: number | null;
   statuses: ResourceStatus[];
   tags: string[];
+  /** Intervalul în care resursa trebuie să fie liberă (ISO 8601); `null` pentru tot catalogul. */
+  interval: { start: string; end: string } | null;
   /** Pagina curentă, numerotată de la 1 (în API, `page` pornește de la 0). */
   page: number;
 }
@@ -21,10 +23,21 @@ function isResourceStatus(value: string): value is ResourceStatus {
   return value in STATUS_BADGES;
 }
 
+function readInterval(params: URLSearchParams): CatalogFilters['interval'] {
+  const start = params.get('start');
+  const end = params.get('end');
+  if (start === null || end === null) {
+    return null;
+  }
+  const valid = !Number.isNaN(Date.parse(start)) && Date.parse(end) > Date.parse(start);
+  return valid ? { start, end } : null;
+}
+
 function readFilters(params: URLSearchParams): CatalogFilters {
   const categoryId = Number(params.get('categoryId'));
   const page = Number(params.get('page'));
   return {
+    interval: readInterval(params),
     q: params.get('q') ?? '',
     categoryId: Number.isInteger(categoryId) && categoryId > 0 ? categoryId : null,
     statuses: params.getAll('status').filter(isResourceStatus),
@@ -47,6 +60,10 @@ function writeFilters(filters: CatalogFilters): URLSearchParams {
   filters.tags.forEach((tag) => {
     params.append('tag', tag);
   });
+  if (filters.interval !== null) {
+    params.set('start', filters.interval.start);
+    params.set('end', filters.interval.end);
+  }
   if (filters.page > 1) {
     params.set('page', String(filters.page));
   }

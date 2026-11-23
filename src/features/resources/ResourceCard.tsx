@@ -3,7 +3,7 @@ import { IconCertificate } from '@tabler/icons-react';
 import { Link } from 'react-router';
 
 import type { ResourceSummary } from '../../api/types';
-import { STATUS_BADGES } from './resourceLabels';
+import { APPROVAL_FLOW_LABELS, STATUS_BADGES } from './resourceLabels';
 
 interface ResourceCardProps {
   resource: ResourceSummary;
@@ -44,6 +44,9 @@ export function ResourceCard({ resource, search }: ResourceCardProps): React.JSX
           {resource.category.name}
           {location}
         </Text>
+        <Text size="sm" c="dimmed">
+          Aprobare: {APPROVAL_FLOW_LABELS[resource.approvalFlow]}
+        </Text>
         <CertificationHint resource={resource} />
         {resource.tags.length > 0 && (
           <Group gap={6}>
@@ -71,7 +74,7 @@ function CertificationHint({ resource }: { resource: ResourceSummary }): React.J
       <Text size="sm" c="inherit">
         {certified
           ? `Ai certificarea (nivel ${level} cerut)`
-          : `Necesită certificare nivel ${level}`}
+          : `Necesită certificare nivel ${level}, pe care nu o ai`}
       </Text>
     </Group>
   );

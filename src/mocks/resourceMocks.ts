@@ -122,9 +122,17 @@ function compareBy(sort: string): (a: ResourceSummary, b: ResourceSummary) => nu
   };
 }
 
-/** `GET /resources`: catalogul filtrat, sortat și paginat. */
-export function catalogPage(query: CatalogQuery, now: Date): ResourceSummaryPage {
+/**
+ * `GET /resources`: catalogul filtrat, sortat și paginat. `include` mai restrânge resursele (de
+ * exemplu, doar cele libere într-un interval, pentru `GET /resources/available`).
+ */
+export function catalogPage(
+  query: CatalogQuery,
+  now: Date,
+  include: (resource: SeedResource) => boolean = () => true,
+): ResourceSummaryPage {
   const items = allResources()
+    .filter(include)
     .map((resource) => ({ resource, summary: toSummary(resource, now) }))
     .filter(({ resource, summary }) => matches(summary, resource, query))
     .map(({ summary }) => summary)

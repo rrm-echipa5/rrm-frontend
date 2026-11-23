@@ -1,4 +1,4 @@
-import type { FieldError, HealthStatus, Problem } from './types';
+import type { AlternativeSlot, FieldError, HealthStatus, Problem } from './types';
 
 /** Prefixul API-ului; în dezvoltare, Vite trimite `/api` către backend-ul local. */
 export const API_BASE_URL = '/api';
@@ -8,6 +8,8 @@ export class ApiError extends Error {
   readonly status: number;
   readonly code: string;
   readonly fieldErrors: FieldError[];
+  /** Sloturile libere propuse la `409 SLOT_UNAVAILABLE`; goală pentru celelalte erori. */
+  readonly alternativeSlots: AlternativeSlot[];
 
   constructor(problem: Problem) {
     super(problem.detail ?? problem.title);
@@ -15,6 +17,7 @@ export class ApiError extends Error {
     this.status = problem.status;
     this.code = problem.code;
     this.fieldErrors = problem.errors ?? [];
+    this.alternativeSlots = problem.alternativeSlots ?? [];
   }
 }
 
