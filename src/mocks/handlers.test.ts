@@ -1,5 +1,6 @@
 import type {
   Problem,
+  ResourceCalendar,
   ResourceDetail,
   ResourceSummaryPage,
   ResourceWriteRequest,
@@ -126,5 +127,36 @@ describe('handlerele mock pentru adăugare, modificare și ștergere', () => {
     expect(response.status).toBe(409);
     expect(await problemCode(response)).toBe('RESOURCE_HAS_RESERVATIONS');
     vi.useRealTimers();
+  });
+});
+
+describe('handlerul mock pentru calendarul resursei', () => {
+  const WEEK = 'start=2026-11-09T00:00:00%2B02:00&end=2026-11-16T00:00:00%2B02:00';
+
+  it('întoarce intervalele ocupate ale săptămânii, cu cele proprii marcate', async () => {
+    vi.stubEnv('VITE_MOCK_USER_ID', '3');
+    const response = await fetch(`/api/resources/7/calendar?${WEEK}`);
+    const body = (await response.json()) as ResourceCalendar;
+
+    expect(body.rules.minDurationMinutes).toBe(30);
+    expect(body.entries).toEqual([
+      expect.objectContaining({ type: 'PENDING', own: true, reservationId: 1042 }),
+      expect.objectContaining({ type: 'CONFIRMED', own: false, reservationId: null }),
+    ]);
+  });
+
+  it('include mentenanța încheiată din săptămâna ei', async () => {
+    const response = await fetch(
+      '/api/resources/7/calendar?start=2026-11-02T00:00:00%2B02:00&end=2026-11-09T00:00:00%2B02:00',
+    );
+    const body = (await response.json()) as ResourceCalendar;
+    expect(body.entries.map((entry) => entry.type)).toEqual(['MAINTENANCE']);
+  });
+
+  it('respinge un interval mai lung de 31 de zile', async () => {
+    const response = await fetch(
+      '/api/resources/7/calendar?start=2026-11-01T00:00:00Z&end=2026-12-15T00:00:00Z',
+    );
+    expect(response.status).toBe(400);
   });
 });

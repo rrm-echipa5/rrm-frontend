@@ -150,23 +150,45 @@ export function certificationStatus(cert: SeedCertification, now: Date): Certifi
   return 'ACTIVE';
 }
 
-/** Din tabelul `reservations`: doar câmpurile care contează pentru scoaterea din catalog. */
+/** Din tabelul `reservations`: câmpurile folosite de calendar și de scoaterea din catalog. */
 export interface SeedReservation {
   id: number;
   resourceId: number;
+  requesterId: number;
   status: string;
+  start: string;
   end: string;
+}
+
+function reservation(
+  ids: [id: number, resourceId: number, requesterId: number],
+  status: string,
+  start: string,
+  end: string,
+): SeedReservation {
+  const [id, resourceId, requesterId] = ids;
+  return { id, resourceId, requesterId, status, start, end };
 }
 
 /** Rezervările 1040-1048 din seed, în toate statusurile din diagrama de stări. */
 export const SEED_RESERVATIONS: SeedReservation[] = [
-  { id: 1040, resourceId: 7, status: 'CANCELLED', end: '2026-11-03T12:00:00+02:00' },
-  { id: 1041, resourceId: 12, status: 'COMPLETED', end: '2026-11-05T11:00:00+02:00' },
-  { id: 1042, resourceId: 7, status: 'PENDING_ADMIN', end: '2026-11-12T12:00:00+02:00' },
-  { id: 1043, resourceId: 10, status: 'CONFIRMED', end: '2026-11-10T20:00:00+02:00' },
-  { id: 1044, resourceId: 7, status: 'CANCELLED', end: '2026-11-20T15:00:00+02:00' },
-  { id: 1045, resourceId: 9, status: 'REJECTED', end: '2026-11-14T16:00:00+02:00' },
-  { id: 1046, resourceId: 7, status: 'CONFIRMED', end: '2026-11-13T11:00:00+02:00' },
-  { id: 1047, resourceId: 11, status: 'AUTO_CANCELLED', end: '2026-11-06T13:00:00+02:00' },
-  { id: 1048, resourceId: 12, status: 'PENDING', end: '2026-11-11T15:30:00+02:00' },
+  reservation([1040, 7, 3], 'CANCELLED', '2026-11-03T10:00:00+02:00', '2026-11-03T12:00:00+02:00'),
+  reservation([1041, 12, 3], 'COMPLETED', '2026-11-05T09:00:00+02:00', '2026-11-05T11:00:00+02:00'),
+  reservation(
+    [1042, 7, 3],
+    'PENDING_ADMIN',
+    '2026-11-12T10:00:00+02:00',
+    '2026-11-12T12:00:00+02:00',
+  ),
+  reservation([1043, 10, 5], 'CONFIRMED', '2026-11-10T08:00:00+02:00', '2026-11-10T20:00:00+02:00'),
+  reservation([1044, 7, 3], 'CANCELLED', '2026-11-20T13:00:00+02:00', '2026-11-20T15:00:00+02:00'),
+  reservation([1045, 9, 5], 'REJECTED', '2026-11-14T14:00:00+02:00', '2026-11-14T16:00:00+02:00'),
+  reservation([1046, 7, 2], 'CONFIRMED', '2026-11-13T09:00:00+02:00', '2026-11-13T11:00:00+02:00'),
+  reservation(
+    [1047, 11, 3],
+    'AUTO_CANCELLED',
+    '2026-11-06T12:00:00+02:00',
+    '2026-11-06T13:00:00+02:00',
+  ),
+  reservation([1048, 12, 5], 'PENDING', '2026-11-11T14:00:00+02:00', '2026-11-11T15:30:00+02:00'),
 ];
