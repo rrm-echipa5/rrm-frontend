@@ -1,5 +1,11 @@
 import type { UserRef } from '../api/types';
-import { SEED_RESOURCES, SEED_USERS, type SeedResource, type SeedUser } from './seedData';
+import {
+  SEED_LOADED_AT,
+  SEED_RESOURCES,
+  SEED_USERS,
+  type SeedResource,
+  type SeedUser,
+} from './seedData';
 
 /**
  * Utilizatorul în numele căruia răspunde mock-ul, ca `RRM_DEMO_USER_ID` din backend până la
@@ -65,11 +71,14 @@ export function insertResource(build: (id: number) => SeedResource, now: string)
   return created;
 }
 
-/** Înlocuiește datele unei resurse existente. */
+/**
+ * Înlocuiește datele unei resurse existente. O resursă din datele de test nu are încă momentul
+ * creării în `timestamps`, deci la prima modificare păstrează `SEED_LOADED_AT`.
+ */
 export function replaceResource(resource: SeedResource, now: string): void {
   resources = resources.map((candidate) => (candidate.id === resource.id ? resource : candidate));
   const createdAt = timestamps.get(resource.id)?.createdAt;
-  timestamps.set(resource.id, { createdAt: createdAt ?? '', updatedAt: now });
+  timestamps.set(resource.id, { createdAt: createdAt ?? SEED_LOADED_AT, updatedAt: now });
 }
 
 /** Scoate resursa din catalog (ștergerea logică din backend). */

@@ -5,6 +5,7 @@ import type {
   ResourceWriteRequest,
 } from '../api/types';
 import { startMockServer } from '../test/mockServer';
+import { SEED_LOADED_AT } from './seedData';
 
 startMockServer();
 
@@ -95,6 +96,17 @@ describe('handlerele mock pentru adăugare, modificare și ștergere', () => {
 
     const other = await send('PUT', '/api/resources/10', NEW_RESOURCE);
     expect(other.status).toBe(403);
+  });
+
+  it('la prima modificare, o resursă din datele de test își păstrează createdAt', async () => {
+    const response = await send('PUT', '/api/resources/7', { ...NEW_RESOURCE, name: 'SEM nou' });
+    const updated = (await response.json()) as ResourceDetail;
+    const fetched = (await (await fetch('/api/resources/7')).json()) as ResourceDetail;
+
+    for (const detail of [updated, fetched]) {
+      expect(detail.createdAt).toBe(SEED_LOADED_AT);
+      expect(Number.isNaN(new Date(detail.createdAt).getTime())).toBe(false);
+    }
   });
 
   it('doar administratorul de sistem scoate o resursă din catalog', async () => {
