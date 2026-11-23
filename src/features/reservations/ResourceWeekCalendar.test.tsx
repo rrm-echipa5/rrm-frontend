@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 import { startMockServer } from '../../test/mockServer';
@@ -50,5 +50,37 @@ describe('ResourceWeekCalendar', () => {
 
     expect(await screen.findByText(/se suprapune cu un interval ocupat/)).toBeVisible();
     expect(screen.queryByText(/Selecția ta:/)).not.toBeInTheDocument();
+  });
+
+  it('la tragere, intervalul ține până la sfârșitul ultimului slot', async () => {
+    renderWithProviders(<ResourceWeekCalendar resourceId={7} selectable />);
+    await screen.findByText('Rezervarea ta', { selector: '[class*="Event"] *' });
+    const first = screen.getByRole('button', { name: 'Interval 2026-11-12 14:00:00 - 14:30:00' });
+    const last = screen.getByRole('button', { name: 'Interval 2026-11-12 14:30:00 - 15:00:00' });
+
+    // jsdom nu are elementsFromPoint; @mantine/schedule îl folosește ca să afle slotul de sub cursor.
+    Object.defineProperty(document, 'elementsFromPoint', {
+      value: () => [last],
+      configurable: true,
+    });
+    try {
+      fireEvent.pointerDown(first);
+      fireEvent.pointerMove(document);
+      fireEvent.pointerUp(document);
+    } finally {
+      Reflect.deleteProperty(document, 'elementsFromPoint');
+    }
+
+    // onSlotDragEnd dă sfârșitul ultimului slot (15:00), nu începutul lui (14:30).
+    expect(await screen.findByText(/joi, 12 noiembrie, 14:00 – 15:00 \(1 h\)/)).toBeVisible();
+  });
+
+  it('afișează mentenanța care trece peste miezul nopții', async () => {
+    // Vineri, 20 noiembrie 2026, 08:00 - sâmbătă, 21 noiembrie, 18:00.
+    vi.setSystemTime(new Date('2026-11-18T12:00:00+02:00'));
+    renderWithProviders(<ResourceWeekCalendar resourceId={7} selectable />);
+
+    const pieces = await screen.findAllByText('Mentenanță', { selector: '[class*="Event"] *' });
+    expect(pieces[0]).toBeVisible();
   });
 });

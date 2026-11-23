@@ -1,24 +1,18 @@
 import { Alert, Badge, Card, Group, Stack, Title } from '@mantine/core';
-import { type ScheduleEventData, WeekView } from '@mantine/schedule';
+import { WeekView } from '@mantine/schedule';
 import dayjs from 'dayjs';
 import { useMemo, useState } from 'react';
 
-import type { CalendarEntry, UsageRuleSummary } from '../../api/types';
+import type { UsageRuleSummary } from '../../api/types';
 import { formatDayRange } from '../resources/formatters';
 import { errorMessage } from '../resources/resourceFormSchema';
-import {
-  ENTRY_STYLES,
-  entryStyle,
-  OWN_ENTRY_STYLE,
-  SCHEDULE_LABELS,
-  SELECTION_STYLE,
-} from './calendarLabels';
+import { toEvents } from './calendarEvents';
+import { ENTRY_STYLES, OWN_ENTRY_STYLE, SCHEDULE_LABELS, SELECTION_STYLE } from './calendarLabels';
 import {
   isSlotUnavailable,
   rangeFromSlot,
   selectionError,
   type TimeRange,
-  toScheduleTime,
   weekRange,
 } from './calendarSelection';
 import { SelectionSummary } from './SelectionSummary';
@@ -28,28 +22,6 @@ interface ResourceWeekCalendarProps {
   resourceId: number;
   /** Dacă se pot alege intervale (nu pentru o resursă defectă). */
   selectable: boolean;
-}
-
-function toEvents(entries: CalendarEntry[], selection: TimeRange | null): ScheduleEventData[] {
-  const events: ScheduleEventData[] = entries.map((entry, index) => ({
-    id: `entry-${String(index)}`,
-    title: entryStyle(entry).label,
-    start: toScheduleTime(entry.start),
-    end: toScheduleTime(entry.end),
-    color: entryStyle(entry).color,
-    variant: entry.own ? 'filled' : 'light',
-  }));
-  if (selection !== null) {
-    events.push({
-      id: 'selection',
-      title: SELECTION_STYLE.label,
-      start: toScheduleTime(selection.start),
-      end: toScheduleTime(selection.end),
-      color: SELECTION_STYLE.color,
-      variant: 'filled',
-    });
-  }
-  return events;
 }
 
 /** Legenda culorilor, ca sub calendarul din wireframe-ul 4.1. */

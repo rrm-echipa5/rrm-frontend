@@ -54,10 +54,14 @@ export function formatWeekdayTime(value: string): string {
   return WEEKDAY_TIME_FORMAT.format(new Date(value)).replace(' la ', ', ');
 }
 
-/** Un interval de zile, ca în calendarul din wireframe: „9 – 13 nov. 2026”. */
+/**
+ * Un interval de zile, ca în calendarul din wireframe: „9 – 13 nov. 2026”. Separatorul din
+ * `formatRange` depinde de datele ICU: „9–13 nov. 2026” fără spații în aceeași lună, cu spații
+ * înguste (U+2009) între luni diferite, iar unele versiuni pot pune `-`. Îl aducem la „ – ”.
+ */
 export function formatDayRange(start: string, end: string): string {
   const range = SHORT_DATE_FORMAT.formatRange(new Date(start), new Date(end));
-  return range.replace('–', ' – ').replace(/\s+/g, ' ');
+  return range.replace(/\s*[–-]\s*/u, ' – ').replace(/\s+/gu, ' ');
 }
 
 /** Mărimea unui fișier, de forma „2,4 MB”. */
