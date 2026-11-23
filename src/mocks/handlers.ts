@@ -12,6 +12,7 @@ import {
   type WriteResult,
 } from './resourceWriteMocks';
 import { SEED_CATEGORIES } from './seedData';
+import { currentUserProfile } from './userMocks';
 
 function problem(status: number, code: string, detail: string): HttpResponse<Problem> {
   return problemResponse({
@@ -97,8 +98,12 @@ function parseCatalogQuery(url: URL): CatalogQuery | string {
   };
 }
 
-/** Handlerele MSW pentru endpoint-urile catalogului și ale fișei resursei (tag-ul Resurse). */
+/** Handlerele MSW pentru endpoint-urile implementate în mock, în ordinea din `rrm-api.yaml`. */
 export const handlers = [
+  http.get('/api/health', () => HttpResponse.json({ status: 'ok', database: 'ok' })),
+
+  http.get('/api/users/me', () => HttpResponse.json(currentUserProfile())),
+
   http.get('/api/resource-categories', () => HttpResponse.json(SEED_CATEGORIES)),
 
   http.get('/api/resources', ({ request }) => {

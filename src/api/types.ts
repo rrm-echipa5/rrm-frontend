@@ -53,6 +53,26 @@ export interface UserRef {
   email?: string | null;
 }
 
+/** Enumerarea `Rol`. */
+export type Role = 'STUDENT' | 'RESEARCHER' | 'RESOURCE_ADMIN' | 'SYSTEM_ADMIN';
+
+/** Referința la o echipă de cercetare (`TeamRef`). */
+export interface TeamRef {
+  id: number;
+  name: string;
+  coordinator?: UserRef;
+}
+
+/** Profilul utilizatorului curent (`CurrentUser`, `GET /users/me`). */
+export interface CurrentUser {
+  id: number;
+  name: string;
+  email: string;
+  role: Role;
+  twoFactorEnabled: boolean;
+  teams: TeamRef[];
+}
+
 /** Referința la o resursă (`ResourceRef`). */
 export interface ResourceRef {
   id: number;

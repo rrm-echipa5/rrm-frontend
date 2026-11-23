@@ -2,7 +2,12 @@ import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Mock } from 'vitest';
 
-import type { ResourceCategory, ResourceDetail, ResourceSummaryPage } from '../../api/types';
+import type {
+  CurrentUser,
+  ResourceCategory,
+  ResourceDetail,
+  ResourceSummaryPage,
+} from '../../api/types';
 import { jsonResponse, renderWithProviders } from '../../test/render';
 import { ResourcesPage } from './ResourcesPage';
 
@@ -176,6 +181,53 @@ describe('ResourcesPage', () => {
       name: 'Microscop SEM',
       categoryId: 1,
       specifications: { Rezoluție: '1,2 nm la 30 kV' },
+    });
+  });
+
+  describe('acțiunile după rolul utilizatorului curent (GET /users/me)', () => {
+    function asRole(role: CurrentUser['role']): Route {
+      const user: CurrentUser = {
+        id: 1,
+        name: 'Utilizator de test',
+        email: 'test@usv.ro',
+        role,
+        twoFactorEnabled: false,
+        teams: [],
+      };
+      return ['GET', '/api/users/me', () => jsonResponse(user)];
+    }
+
+    it('un student nu vede adăugarea, modificarea și ștergerea', async () => {
+      mockApi([...CATALOG_ROUTES, asRole('STUDENT')]);
+      renderWithProviders(<ResourcesPage />);
+
+      await screen.findByText('Microscop electronic SEM');
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: 'Adaugă resursă' })).not.toBeInTheDocument();
+      });
+      expect(screen.queryByRole('button', { name: /^Modifică/ })).not.toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: /^Șterge/ })).not.toBeInTheDocument();
+    });
+
+    it('administratorul de resurse modifică, dar nu vede butonul de ștergere', async () => {
+      mockApi([...CATALOG_ROUTES, asRole('RESOURCE_ADMIN')]);
+      renderWithProviders(<ResourcesPage />);
+
+      expect(
+        await screen.findByRole('button', { name: 'Modifică Microscop electronic SEM' }),
+      ).toBeInTheDocument();
+      await waitFor(() => {
+        expect(screen.queryByRole('button', { name: /^Șterge/ })).not.toBeInTheDocument();
+      });
+    });
+
+    it('administratorul de sistem vede și butonul de ștergere', async () => {
+      mockApi([...CATALOG_ROUTES, asRole('SYSTEM_ADMIN')]);
+      renderWithProviders(<ResourcesPage />);
+
+      expect(
+        await screen.findByRole('button', { name: 'Șterge Microscop electronic SEM' }),
+      ).toBeInTheDocument();
     });
   });
 });
