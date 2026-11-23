@@ -110,3 +110,11 @@ export function replaceReservation(reservation: SeedReservation): void {
     candidate.id === reservation.id ? reservation : candidate,
   );
 }
+
+/** Adaugă o rezervare cu id-ul următor, ca secvența din baza de date. */
+export function insertReservation(build: (id: number) => SeedReservation): SeedReservation {
+  const id = Math.max(0, ...reservations.map((candidate) => candidate.id)) + 1;
+  const created = build(id);
+  reservations = [...reservations, created];
+  return created;
+}

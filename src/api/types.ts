@@ -16,6 +16,8 @@ export interface Problem {
   instance?: string;
   timestamp?: string;
   errors?: FieldError[];
+  /** Doar la `409 SLOT_UNAVAILABLE` (`SlotConflictProblem`): intervalele libere propuse. */
+  alternativeSlots?: AlternativeSlot[];
 }
 
 /** Răspunsul `GET /api/health`. */
@@ -307,4 +309,34 @@ export interface Reservation extends ReservationSummary {
 /** Corpul opțional al anulării (`CancelReservationRequest`). */
 export interface CancelReservationRequest {
   reason?: string;
+}
+
+/** Proiectul utilizatorului, cu bugetul de ore (`ProjectBudget`, `GET /users/me/projects`). */
+export interface ProjectBudget {
+  id: number;
+  title: string;
+  team: TeamRef;
+  budgetHours: number;
+  /** Orele rezervărilor confirmate, în desfășurare sau finalizate. */
+  usedHours: number;
+  remainingHours: number;
+}
+
+/** Cererea de rezervare (`ReservationCreateRequest`, `POST /reservations`). */
+export interface ReservationCreateRequest {
+  resourceId: number;
+  projectId: number;
+  start: string;
+  end: string;
+  /** Scopul utilizării, 3-500 de caractere. */
+  purpose: string;
+}
+
+/** Un interval liber propus când cel cerut e ocupat (`AlternativeSlot`). */
+export interface AlternativeSlot {
+  resource: ResourceRef;
+  start: string;
+  end: string;
+  /** `true` pentru aceeași resursă, `false` pentru o resursă similară. */
+  sameResource: boolean;
 }
