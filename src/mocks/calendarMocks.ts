@@ -1,6 +1,6 @@
 import type { CalendarEntry, CalendarEntryType, ResourceCalendar } from '../api/types';
-import { currentUser, findResource } from './mockDb';
-import { SEED_MAINTENANCE, SEED_RESERVATIONS } from './seedRecords';
+import { allReservations, currentUser, findResource } from './mockDb';
+import { SEED_MAINTENANCE } from './seedRecords';
 
 /** Intervalul maxim al unei cereri de calendar, din `rrm-api.yaml`. */
 const MAX_RANGE_DAYS = 31;
@@ -19,7 +19,7 @@ function overlaps(start: string, end: string, from: Date, to: Date): boolean {
 
 function reservationEntries(resourceId: number, from: Date, to: Date): CalendarEntry[] {
   const userId = currentUser().id;
-  return SEED_RESERVATIONS.flatMap((reservation) => {
+  return allReservations().flatMap((reservation) => {
     const type = ENTRY_TYPES[reservation.status];
     if (
       reservation.resourceId !== resourceId ||

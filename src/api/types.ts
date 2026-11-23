@@ -228,3 +228,83 @@ export interface ResourceCalendar {
   /** Intervalele ocupate, ordonate după început; restul intervalului este liber. */
   entries: CalendarEntry[];
 }
+
+/** Enumerarea `StareRezervare` (diagrama de stări 7.1). */
+export type ReservationStatus =
+  | 'PENDING'
+  | 'PENDING_ADMIN'
+  | 'CONFIRMED'
+  | 'IN_PROGRESS'
+  | 'COMPLETED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'AUTO_CANCELLED';
+
+/** Etapa unei aprobări (`ApprovalStage`). */
+export type ApprovalStage = 'COORDINATOR' | 'RESOURCE_ADMIN';
+
+/** Decizia unei aprobări (`Decision`). */
+export type Decision = 'APPROVED' | 'REJECTED';
+
+/** Referința la un proiect (`ProjectRef`). */
+export interface ProjectRef {
+  id: number;
+  title: string;
+}
+
+/** O rezervare din lista „Rezervările mele” (`ReservationSummary`). */
+export interface ReservationSummary {
+  id: number;
+  resource: ResourceRef;
+  project: ProjectRef;
+  start: string;
+  end: string;
+  status: ReservationStatus;
+}
+
+/** O pagină de rezervări (`ReservationSummaryPage`). */
+export interface ReservationSummaryPage {
+  content: ReservationSummary[];
+  page: PageMeta;
+}
+
+/** O decizie de aprobare sau respingere (`Approval`). */
+export interface Approval {
+  id: number;
+  stage: ApprovalStage;
+  decision: Decision;
+  approver: UserRef;
+  decidedAt: string;
+  /** Motivul, obligatoriu la respingere. */
+  comment?: string | null;
+}
+
+/** Anularea unei rezervări (`Cancellation`). */
+export interface Cancellation {
+  cancelledAt: string;
+  /** Lipsește la anularea automată (fără check-in). */
+  cancelledBy?: UserRef | null;
+  /** `null` dacă solicitantul nu a dat un motiv. */
+  reason: string | null;
+}
+
+/** Detaliile unei rezervări (`Reservation`). */
+export interface Reservation extends ReservationSummary {
+  requester: UserRef;
+  hours: number;
+  purpose: string;
+  approvalFlow: ApprovalFlow;
+  checkInDeadline: string;
+  checkInAt?: string | null;
+  checkOutAt?: string | null;
+  createdAt: string;
+  /** Prezent doar pentru rezervările anulate. */
+  cancellation?: Cancellation | null;
+  /** Deciziile luate până acum (0, 1 sau 2), în ordine. */
+  approvals: Approval[];
+}
+
+/** Corpul opțional al anulării (`CancelReservationRequest`). */
+export interface CancelReservationRequest {
+  reason?: string;
+}

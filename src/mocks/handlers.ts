@@ -3,6 +3,7 @@ import { http, HttpResponse } from 'msw';
 import type { Problem, ResourceDetail, ResourceWriteRequest } from '../api/types';
 import { resourceCalendar } from './calendarMocks';
 import { catalogMoment } from './mockClock';
+import { reservationHandlers } from './reservationHandlers';
 import { catalogPage, type CatalogQuery, myCertifications, resourceDetail } from './resourceMocks';
 import {
   createResource,
@@ -170,4 +171,6 @@ export const handlers = [
   http.get('/api/users/me/certifications', () =>
     HttpResponse.json(myCertifications(catalogMoment())),
   ),
+
+  ...reservationHandlers,
 ];
