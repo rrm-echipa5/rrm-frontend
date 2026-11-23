@@ -16,9 +16,11 @@ import type {
   ResourceWriteRequest,
 } from '../../api/types';
 import {
+  type AvailableResourceParams,
   createResource,
   deleteResource,
   getResource,
+  listAvailableResources,
   listMyCertifications,
   listResourceCategories,
   listResources,
@@ -44,6 +46,18 @@ export function useResourceList(
   return useQuery<ResourceSummaryPage, ApiError>({
     queryKey: [...RESOURCES_KEY, 'list', params],
     queryFn: () => listResources(params),
+    placeholderData: keepPreviousData,
+  });
+}
+
+/** Resursele libere într-un interval; nu se cere nimic cât timp intervalul lipsește (`null`). */
+export function useAvailableResources(
+  params: AvailableResourceParams | null,
+): UseQueryResult<ResourceSummaryPage, ApiError> {
+  return useQuery<ResourceSummaryPage, ApiError>({
+    queryKey: [...RESOURCES_KEY, 'available', params],
+    queryFn: () => listAvailableResources(params ?? { start: '', end: '', page: 0, size: 1 }),
+    enabled: params !== null,
     placeholderData: keepPreviousData,
   });
 }

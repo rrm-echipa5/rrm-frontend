@@ -42,6 +42,36 @@ export function listResources(params: ResourceListParams): Promise<ResourceSumma
   return apiRequest<ResourceSummaryPage>(`/resources?${query.toString()}`);
 }
 
+/** Parametrii căutării resurselor libere (`GET /api/resources/available`). */
+export interface AvailableResourceParams extends Omit<ResourceListParams, 'statuses'> {
+  /** Începutul intervalului (inclus), ISO 8601. */
+  start: string;
+  /** Sfârșitul intervalului (exclus), ISO 8601. */
+  end: string;
+}
+
+/** `GET /api/resources/available`: resursele fără rezervări sau mentenanță în interval. */
+export function listAvailableResources(
+  params: AvailableResourceParams,
+): Promise<ResourceSummaryPage> {
+  const query = new URLSearchParams({
+    start: params.start,
+    end: params.end,
+    page: String(params.page),
+    size: String(params.size),
+  });
+  if (params.q) {
+    query.set('q', params.q);
+  }
+  if (params.categoryId !== undefined) {
+    query.set('categoryId', String(params.categoryId));
+  }
+  for (const tag of params.tags ?? []) {
+    query.append('tag', tag);
+  }
+  return apiRequest<ResourceSummaryPage>(`/resources/available?${query.toString()}`);
+}
+
 /** `GET /api/resources/{resourceId}` */
 export function getResource(resourceId: number): Promise<ResourceDetail> {
   return apiRequest<ResourceDetail>(`/resources/${String(resourceId)}`);
