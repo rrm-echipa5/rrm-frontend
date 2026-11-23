@@ -5,6 +5,12 @@ import { defineConfig } from 'vite';
 // Backend-ul FastAPI local (rrm-backend); se poate schimba cu variabila RRM_API_TARGET.
 const apiTarget = process.env.RRM_API_TARGET ?? 'http://localhost:8080';
 
+// Testele rulează în fusul orar al utilizatorilor (România), oricare ar fi fusul mașinii: altfel
+// orele din calendar diferă între calculatoarele echipei și GitHub Actions (UTC).
+if (process.env.VITEST) {
+  process.env.TZ = 'Europe/Bucharest';
+}
+
 export default defineConfig({
   plugins: [react()],
   server: {
