@@ -1,6 +1,7 @@
 import { http, HttpResponse } from 'msw';
 
 import type { Problem, ResourceDetail, ResourceWriteRequest } from '../api/types';
+import { availableResources } from './availabilityMocks';
 import { resourceCalendar } from './calendarMocks';
 import { catalogMoment } from './mockClock';
 import { requestHandlers } from './requestHandlers';
@@ -114,6 +115,25 @@ export const handlers = [
       return problem(400, 'VALIDATION_FAILED', query);
     }
     return HttpResponse.json(catalogPage(query, catalogMoment()));
+  }),
+
+  // Înaintea rutei `/api/resources/:resourceId`, care altfel ar citi „available” ca id.
+  http.get('/api/resources/available', ({ request }) => {
+    const url = new URL(request.url);
+    const query = parseCatalogQuery(url);
+    if (typeof query === 'string') {
+      return problem(400, 'VALIDATION_FAILED', query);
+    }
+    const params = url.searchParams;
+    const result = availableResources(
+      query,
+      params.get('start'),
+      params.get('end'),
+      catalogMoment(),
+    );
+    return result.ok
+      ? HttpResponse.json(result.page)
+      : problem(400, 'VALIDATION_FAILED', result.detail);
   }),
 
   http.get('/api/resources/:resourceId', ({ params }) => {
