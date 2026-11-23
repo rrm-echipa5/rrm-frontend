@@ -109,8 +109,8 @@ function ResourceDetailView({ resource, catalogLink }: ResourceDetailViewProps):
 }
 
 /**
- * „Vezi calendarul” duce la calendarul de sub fișă; formularul de rezervare vine în KAN-76, deci
- * până atunci „Solicită rezervare” este vizibil, dar inactiv.
+ * „Vezi calendarul” și „Solicită rezervare” duc la calendarul de sub fișă: cererea pornește de la
+ * intervalul ales acolo (cazul de utilizare 2.1). O resursă care nu e activă nu poate fi rezervată.
  */
 function ReservationActions({ resource }: { resource: ResourceDetail }): React.JSX.Element {
   const unavailable = resource.status !== 'ACTIVE';
@@ -124,7 +124,7 @@ function ReservationActions({ resource }: { resource: ResourceDetail }): React.J
   };
   const requestHint = unavailable
     ? `Resursa este ${STATUS_BADGES[resource.status].label.toLowerCase()} și nu poate fi rezervată.`
-    : 'Alege un interval în calendar; formularul de rezervare urmează (KAN-76).';
+    : 'Alege intervalul în calendar, apoi „Continuă cu cererea”.';
 
   return (
     <Group gap="sm">
@@ -137,9 +137,15 @@ function ReservationActions({ resource }: { resource: ResourceDetail }): React.J
         Vezi calendarul
       </Button>
       <Tooltip label={requestHint}>
-        <Button leftSection={<IconCalendarPlus size={16} />} {...inactive}>
-          Solicită rezervare
-        </Button>
+        {unavailable ? (
+          <Button leftSection={<IconCalendarPlus size={16} />} {...inactive}>
+            Solicită rezervare
+          </Button>
+        ) : (
+          <Button leftSection={<IconCalendarPlus size={16} />} component="a" href="#calendar">
+            Solicită rezervare
+          </Button>
+        )}
       </Tooltip>
     </Group>
   );

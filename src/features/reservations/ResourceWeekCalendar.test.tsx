@@ -39,6 +39,26 @@ describe('ResourceWeekCalendar', () => {
     expect(await screen.findByText(/joi, 12 noiembrie, 14:00 – 14:30 \(30 min\)/)).toBeVisible();
   });
 
+  it('duce la formularul cererii cu intervalul ales', async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<ResourceWeekCalendar resourceId={7} selectable />);
+    await screen.findByText('Rezervarea ta', { selector: '[class*="Event"] *' });
+
+    await user.click(
+      screen.getByRole('button', { name: 'Interval 2026-11-12 14:00:00 - 14:30:00' }),
+    );
+
+    const link = await screen.findByRole('link', { name: 'Continuă cu cererea' });
+    const target = new URL(link.getAttribute('href') ?? '', 'http://localhost');
+    expect(target.pathname).toBe('/catalog/7/request');
+    expect(new Date(target.searchParams.get('start') ?? '')).toEqual(
+      new Date('2026-11-12T14:00:00+02:00'),
+    );
+    expect(new Date(target.searchParams.get('end') ?? '')).toEqual(
+      new Date('2026-11-12T14:30:00+02:00'),
+    );
+  });
+
   it('nu permite alegerea unui interval ocupat', async () => {
     const user = userEvent.setup();
     renderWithProviders(<ResourceWeekCalendar resourceId={7} selectable />);

@@ -1,7 +1,9 @@
 import { apiRequest } from '../../api/client';
 import type {
   CancelReservationRequest,
+  ProjectBudget,
   Reservation,
+  ReservationCreateRequest,
   ReservationStatus,
   ReservationSummaryPage,
   ResourceCalendar,
@@ -48,4 +50,14 @@ export function cancelReservation(reservationId: number, reason: string): Promis
     method: 'POST',
     body: JSON.stringify(body),
   });
+}
+
+/** `GET /api/users/me/projects`: proiectele utilizatorului, cu orele rămase din buget. */
+export function listMyProjects(): Promise<ProjectBudget[]> {
+  return apiRequest<ProjectBudget[]>('/users/me/projects');
+}
+
+/** `POST /api/reservations`: cererea (`PENDING`) sau rezervarea directă (`CONFIRMED`). */
+export function createReservation(body: ReservationCreateRequest): Promise<Reservation> {
+  return apiRequest<Reservation>('/reservations', { method: 'POST', body: JSON.stringify(body) });
 }

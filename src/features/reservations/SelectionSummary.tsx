@@ -1,10 +1,13 @@
-import { Alert, Button, Group, Text, Tooltip } from '@mantine/core';
+import { Alert, Button, Group, Text } from '@mantine/core';
 import dayjs from 'dayjs';
+import { Link } from 'react-router';
 
 import { formatMinutes, formatWeekdayTime } from '../resources/formatters';
 import type { TimeRange } from './calendarSelection';
+import { requestPath } from './requestLinks';
 
 interface SelectionSummaryProps {
+  resourceId: number;
   selection: TimeRange | null;
   error: string | null;
 }
@@ -15,8 +18,12 @@ function describe(range: TimeRange): string {
   return `${formatWeekdayTime(range.start)} – ${end} (${formatMinutes(minutes)})`;
 }
 
-/** Intervalul ales în calendar, motivul pentru care nu e valid sau pasul următor (cererea). */
-export function SelectionSummary({ selection, error }: SelectionSummaryProps): React.JSX.Element {
+/** Intervalul ales în calendar, motivul pentru care nu e valid sau trecerea la formularul cererii. */
+export function SelectionSummary({
+  resourceId,
+  selection,
+  error,
+}: SelectionSummaryProps): React.JSX.Element {
   if (error !== null) {
     return (
       <Alert color="red" title="Intervalul nu poate fi ales">
@@ -36,17 +43,9 @@ export function SelectionSummary({ selection, error }: SelectionSummaryProps): R
       <Text size="sm">
         Selecția ta: <strong>{describe(selection)}</strong>
       </Text>
-      <Tooltip label="Formularul cererii, cu intervalul completat, urmează (KAN-76).">
-        <Button
-          data-disabled
-          aria-disabled
-          onClick={(event) => {
-            event.preventDefault();
-          }}
-        >
-          Continuă cu cererea
-        </Button>
-      </Tooltip>
+      <Button component={Link} to={requestPath(resourceId, selection)}>
+        Continuă cu cererea
+      </Button>
     </Group>
   );
 }

@@ -115,7 +115,9 @@ export function ResourceWeekCalendar({
           }}
         />
         <Legend />
-        {selectable && <SelectionSummary selection={selection} error={error} />}
+        {selectable && (
+          <SelectionSummary resourceId={resourceId} selection={selection} error={error} />
+        )}
       </Stack>
     </Card>
   );
