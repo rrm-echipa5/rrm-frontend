@@ -64,6 +64,18 @@ export function formatDayRange(start: string, end: string): string {
   return range.replace(/\s*[–-]\s*/u, ' – ').replace(/\s+/gu, ' ');
 }
 
+/**
+ * Un interval orar, de forma „joi, 12 noiembrie, 10:00 – 12:00”; dacă se termină în altă zi,
+ * „joi, 12 noiembrie, 22:00 – vineri, 13 noiembrie, 02:00”.
+ */
+export function formatTimeRange(start: string, end: string): string {
+  const sameDay = new Date(start).toDateString() === new Date(end).toDateString();
+  const endText = sameDay ? TIME_FORMAT.format(new Date(end)) : formatWeekdayTime(end);
+  return `${formatWeekdayTime(start)} – ${endText}`;
+}
+
+const TIME_FORMAT = new Intl.DateTimeFormat('ro-RO', { hour: '2-digit', minute: '2-digit' });
+
 /** Mărimea unui fișier, de forma „2,4 MB”. */
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024 * 1024) {

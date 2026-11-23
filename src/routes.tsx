@@ -28,6 +28,13 @@ export const router = createBrowserRouter([
         }),
       },
       {
+        path: 'reservations',
+        lazy: async () => ({
+          Component: (await import('./features/reservations/MyReservationsPage'))
+            .MyReservationsPage,
+        }),
+      },
+      {
         path: 'resources',
         lazy: async () => ({
           Component: (await import('./features/resources/ResourcesPage')).ResourcesPage,
